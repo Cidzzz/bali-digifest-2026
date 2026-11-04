@@ -16,15 +16,23 @@ export interface Storytelling {
   seo_tags: string[];
 }
 
+export interface ExportDocument {
+  document_name: string;
+  reason: string;
+}
+
 export interface ExportCompliance {
   hs_code_recommendation: string;
   hs_description: string;
+  confidence_level?: string;
   material_clearance: {
     is_restricted: boolean;
     cites_warning: string | null;
     svlk_required: boolean;
     fumigation_required: boolean;
   };
+  required_documents?: ExportDocument[];
+  packaging_advice?: string;
   export_notes: string;
 }
 
@@ -35,6 +43,8 @@ export interface ValuationAndCertificate {
     suggested_fob_usd: string;
   };
   craftsmanship_score: number;
+  estimated_production_days?: number;
+  value_drivers?: string[];
   digital_certificate: {
     certificate_id: string;
     artisan_attribution: string;

@@ -36,12 +36,24 @@ export const MOCK_GARUDA_ANALYSIS: KriyaAnalysisResponse = {
   export_compliance: {
     hs_code_recommendation: "4420.10.00",
     hs_description: "Statuettes and other ornaments, of wood (BTKI 2026)",
+    confidence_level: "High (96%)",
     material_clearance: {
       is_restricted: false,
       cites_warning: null,
       svlk_required: true,
       fumigation_required: true
     },
+    required_documents: [
+      {
+        document_name: "Sertifikat V-Legal / SVLK",
+        reason: "Wajib untuk seluruh ekspor kriya kayu Indonesia sesuai Permendag RI No. 8/2024 guna menjamin legalitas sumber kayu tropis."
+      },
+      {
+        document_name: "Fumigasi Standar ISPM 15",
+        reason: "Perlakuan wajib biosekuriti karantina untuk mencegah organisme pengganggu tumbuhan pada kayu alami tujuan AS, Uni Eropa, dan Australia."
+      }
+    ],
+    packaging_advice: "Bungkus bubble wrap 3 lapis, beri pelindung sudut busa padat, dan kemas dalam peti kayu (wooden crate) kering bersertifikat ISPM-15.",
     export_notes: "Kayu Suar aman diekspor. Wajib menyertakan sertifikat V-Legal (SVLK) dan perlakuan fumigasi standar ISPM 15 untuk tujuan AS, Uni Eropa, dan Australia."
   },
   valuation_and_certificate: {
@@ -51,6 +63,12 @@ export const MOCK_GARUDA_ANALYSIS: KriyaAnalysisResponse = {
       suggested_fob_usd: "$95 - $130 USD"
     },
     craftsmanship_score: 94,
+    estimated_production_days: 14,
+    value_drivers: [
+      "14 hari pemahatan tangan manual bertingkat",
+      "Kayu suar solid tanpa sambungan lem",
+      "Karakter taksu mitologi Hindu Bali autentik"
+    ],
     digital_certificate: {
       certificate_id: "KL-BALI-2026-GWK01",
       artisan_attribution: "Sentra Ukir Desa Mas, Gianyar - Bali",
@@ -95,12 +113,24 @@ export const MOCK_ENDEK_ANALYSIS: KriyaAnalysisResponse = {
   export_compliance: {
     hs_code_recommendation: "5007.20.00",
     hs_description: "Woven fabrics of silk, containing 85% or more by weight of silk (BTKI 2026)",
+    confidence_level: "High (98%)",
     material_clearance: {
       is_restricted: false,
       cites_warning: null,
       svlk_required: false,
       fumigation_required: false
     },
+    required_documents: [
+      {
+        document_name: "Deklarasi Pewarna Alam Non-Toksik",
+        reason: "Memenuhi standar keamanan bahan tekstil ramah lingkungan (OEKO-TEX / REACH) pasar global."
+      },
+      {
+        document_name: "Surat Keterangan Kerajinan Tradisional",
+        reason: "Membuktikan tekstil buatan tangan ATBM pengrajin lokal untuk fasilitas tarif bea masuk preferensial."
+      }
+    ],
+    packaging_advice: "Lipat rapi dengan kertas bebas asam (acid-free tissue paper), masukkan ke dalam pouch katun ber-silica gel, lalu kotak karton tebal.",
     export_notes: "Kain tenun sutra alami bebas dari regulasi CITES. Kemasan ekspor disarankan menggunakan silica gel anti-kelembaban dan sertifikat pewarna non-toksik."
   },
   valuation_and_certificate: {
@@ -110,6 +140,12 @@ export const MOCK_ENDEK_ANALYSIS: KriyaAnalysisResponse = {
       suggested_fob_usd: "$65 - $90 USD"
     },
     craftsmanship_score: 96,
+    estimated_production_days: 21,
+    value_drivers: [
+      "21 hari penenunan manual ATBM",
+      "Pewarna alami daun tarum ramah lingkungan",
+      "Serat kepompong sutra murbei alami"
+    ],
     digital_certificate: {
       certificate_id: "KL-BALI-2026-END02",
       artisan_attribution: "Kelompok Penenun Tradisional Sidemen, Karangasem - Bali",
@@ -154,12 +190,24 @@ export const MOCK_PERAK_ANALYSIS: KriyaAnalysisResponse = {
   export_compliance: {
     hs_code_recommendation: "7113.11.00",
     hs_description: "Articles of jewelry and parts thereof, of silver (BTKI 2026)",
+    confidence_level: "High (95%)",
     material_clearance: {
       is_restricted: false,
       cites_warning: null,
       svlk_required: false,
       fumigation_required: false
     },
+    required_documents: [
+      {
+        document_name: "Sertifikat Kadar Logam 925 (Assay Certificate)",
+        reason: "Menjamin kemurnian perak 92.5% sesuai standar internasional perhiasan mulia."
+      },
+      {
+        document_name: "Invoice & Packing List Rinci dengan Stempel 925",
+        reason: "Persyaratan verifikasi kepabeanan internasional untuk produk perhiasan bernilai tinggi."
+      }
+    ],
+    packaging_advice: "Kemas dalam kotak perhiasan beludru anti-oksidasi, lapisi bubble wrap tahan guncangan, dan gunakan segel tamper-evident.",
     export_notes: "Perhiasan perak 925 bebas regulasi kehutanan. Pastikan terdapat cap stempel '925' pada fisik barang dan menyertakan sertifikat uji kadar logam."
   },
   valuation_and_certificate: {
@@ -169,6 +217,12 @@ export const MOCK_PERAK_ANALYSIS: KriyaAnalysisResponse = {
       suggested_fob_usd: "$35 - $55 USD"
     },
     craftsmanship_score: 93,
+    estimated_production_days: 5,
+    value_drivers: [
+      "Puntiran kawat mikro perak murni 925",
+      "Keahlian turun-temurun pande Celuk",
+      "Motif puspa sandat filosofi keanggunan Bali"
+    ],
     digital_certificate: {
       certificate_id: "KL-BALI-2026-SIL03",
       artisan_attribution: "Komunitas Pande Perak Celuk, Gianyar - Bali",
