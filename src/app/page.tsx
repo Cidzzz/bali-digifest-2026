@@ -583,13 +583,13 @@ export default function Home() {
                 <div className="p-4 border-t border-stone-100 flex items-center justify-between">
                   <button
                     onClick={stopCamera}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition"
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     onClick={capturePhoto}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C85A32] hover:bg-[#B45309] text-white shadow flex items-center gap-2 transition"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C85A32] hover:bg-[#B45309] text-white shadow flex items-center gap-2 transition cursor-pointer"
                   >
                     <Camera className="w-4 h-4" /> Ambil Foto
                   </button>
@@ -598,62 +598,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        {/* Judge Quick Presets */}
-        <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#D97706]" /> Mode Uji Cepat Juri (One-Click Sample)
-            </span>
-            <span className="text-xs text-stone-500">Pilih sampel karya autentik Bali di bawah untuk simulasi langsung:</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-            <button
-              onClick={() => handlePresetClick("garuda")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
-                selectedPreset === "garuda"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
-              }`}
-            >
-              <div className="w-11 h-11 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center text-xl shadow-2xs">🪵</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Patung Garuda Wisnu</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Kayu Suar • Kemenuh Gianyar</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handlePresetClick("endek")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
-                selectedPreset === "endek"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
-              }`}
-            >
-              <div className="w-11 h-11 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center text-xl shadow-2xs">🧵</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Tenun Ikat Endek</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Sutra Alami • Sidemen Karangasem</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handlePresetClick("perak")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
-                selectedPreset === "perak"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
-              }`}
-            >
-              <div className="w-11 h-11 rounded-lg bg-amber-100/70 border border-amber-300 flex items-center justify-center text-xl shadow-2xs">💍</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Bros Bunga Sandat</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Perak 925 • Celuk Sukawati</p>
-              </div>
-            </button>
-          </div>
-        </div>
 
         {/* Results Area */}
         {result && (
