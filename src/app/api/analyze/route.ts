@@ -127,13 +127,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(MOCK_PERAK_ANALYSIS);
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey || apiKey === "your_gemini_api_key_here") {
-      console.warn("GEMINI_API_KEY is not configured. Returning Garuda mock data.");
-      return NextResponse.json(MOCK_GARUDA_ANALYSIS);
-    }
-
     if (!imageBase64) {
       return NextResponse.json(
         { error: "imageBase64 is required" },
@@ -184,7 +177,6 @@ Evaluate the visual motifs, classify heritage origin, craft multilingual export 
             ],
           },
         ],
-        response_format: { type: "json_object" },
         temperature: 0.2,
       }),
     });
@@ -196,8 +188,31 @@ Evaluate the visual motifs, classify heritage origin, craft multilingual export 
       return NextResponse.json(MOCK_GARUDA_ANALYSIS);
     }
 
-    const data = await response.json();
-    let content = data.choices?.[0]?.message?.content || "{}";
+    const rawResponseText = await response.text();
+    let content = "{}";
+
+    // Check if the response is SSE stream or normal JSON
+    if (rawResponseText.includes("data: ")) {
+      const lines = rawResponseText.split("\n");
+      let fullContent = "";
+      for (const line of lines) {
+        if (line.startsWith("data: ") && line.trim() !== "data: [DONE]") {
+          try {
+            const chunk = JSON.parse(line.slice(6));
+            const delta = chunk.choices?.[0]?.delta?.content || "";
+            fullContent += delta;
+          } catch (_) {}
+        }
+      }
+      content = fullContent || "{}";
+    } else {
+      try {
+        const data = JSON.parse(rawResponseText);
+        content = data.choices?.[0]?.message?.content || "{}";
+      } catch (_) {
+        content = rawResponseText;
+      }
+    }
 
     // Clean potential markdown blocks if router returns ```json ... ```
     content = content.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
