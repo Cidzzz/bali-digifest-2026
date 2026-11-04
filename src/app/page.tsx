@@ -14,7 +14,9 @@ import {
   Camera,
   X,
   RefreshCw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Mic,
+  MicOff
 } from "lucide-react";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
@@ -32,10 +34,13 @@ export default function Home() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const handlePresetClick = (preset: "garuda" | "endek" | "perak") => {
     setSelectedPreset(preset);
@@ -139,12 +144,73 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setSpeechSupported(false);
+    }
     return () => {
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       }
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
     };
   }, []);
+
+  const toggleSpeechRecognition = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Browser Anda tidak mendukung Web Speech API. Silakan gunakan Google Chrome atau Edge.");
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "id-ID";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setUserNotes((prev) => {
+          const base = prev.trim();
+          return base ? `${base} ${transcript}` : transcript;
+        });
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error(err);
+      setIsRecording(false);
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!previewImage && !selectedPreset) {
@@ -319,9 +385,34 @@ export default function Home() {
 
             <div className="flex flex-col h-full justify-between gap-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                  Catatan Pengrajin (Opsional):
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-stone-700">
+                    Catatan Pengrajin (Opsional):
+                  </label>
+                  <button
+                    type="button"
+                    onClick={toggleSpeechRecognition}
+                    disabled={!speechSupported}
+                    className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition ${
+                      isRecording
+                        ? "bg-red-50 text-red-600 border-red-200 animate-pulse"
+                        : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
+                    } ${!speechSupported ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                    title={speechSupported ? "Rekam suara pengrajin dalam Bahasa Indonesia" : "Web Speech API tidak didukung browser ini"}
+                  >
+                    {isRecording ? (
+                      <>
+                        <MicOff className="w-3.5 h-3.5 text-red-500" />
+                        <span>Merekam... Klik Berhenti</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-3.5 h-3.5 text-[#C85A32]" />
+                        <span>Bicara (Suara ID)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <textarea
                   value={userNotes}
                   onChange={(e) => setUserNotes(e.target.value)}
@@ -329,6 +420,12 @@ export default function Home() {
                   rows={4}
                   className="w-full text-xs p-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C85A32]/30 focus:border-[#C85A32] transition resize-none placeholder:text-stone-400 text-stone-800"
                 />
+                {isRecording && (
+                  <p className="text-[11px] text-red-600 mt-1 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-600 animate-ping inline-block" />
+                    Mendengarkan suara pengrajin... Ucapkan detail karya dalam Bahasa Indonesia.
+                  </p>
+                )}
               </div>
 
               <div>
