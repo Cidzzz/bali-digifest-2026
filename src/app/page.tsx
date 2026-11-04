@@ -388,6 +388,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* Judge Quick Presets */}
         <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
