@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   Sparkles, 
   Upload, 
@@ -10,7 +10,11 @@ import {
   CheckCircle2, 
   Copy, 
   DollarSign,
-  Tag
+  Tag,
+  Camera,
+  X,
+  RefreshCw,
+  Image as ImageIcon
 } from "lucide-react";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
@@ -21,11 +25,174 @@ export default function Home() {
   const [activeLang, setActiveLang] = useState<"en" | "jp" | "zh" | "id">("en");
   const [copied, setCopied] = useState(false);
 
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [userNotes, setUserNotes] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
   const handlePresetClick = (preset: "garuda" | "endek" | "perak") => {
     setSelectedPreset(preset);
+    setPreviewImage(null);
     if (preset === "garuda") setResult(MOCK_GARUDA_ANALYSIS);
     if (preset === "endek") setResult(MOCK_ENDEK_ANALYSIS);
     if (preset === "perak") setResult(MOCK_PERAK_ANALYSIS);
+  };
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Harap unggah file gambar (.jpg, .png, .webp)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+        setPreviewImage(compressedBase64);
+        setSelectedPreset(null);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const startCamera = async () => {
+    setIsCameraOpen(true);
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      mediaStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err: any) {
+      setCameraError("Tidak dapat mengakses kamera. Pastikan izin kamera telah diaktifkan.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+    setIsCameraOpen(false);
+    setCameraError(null);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const photoBase64 = canvas.toDataURL("image/jpeg", 0.85);
+      setPreviewImage(photoBase64);
+      setSelectedPreset(null);
+      stopCamera();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  const handleAnalyze = async () => {
+    if (!previewImage && !selectedPreset) {
+      alert("Harap pilih salah satu preset sampel atau unggah foto kerajinan terlebih dahulu.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalysisStep("Menganalisis motif & teknik ukir kriya Bali...");
+
+    try {
+      const timer1 = setTimeout(() => {
+        setAnalysisStep("Mencocokkan klasifikasi HS-Code BTKI 2026 & regulasi ekspor...");
+      }, 1500);
+
+      const timer2 = setTimeout(() => {
+        setAnalysisStep("Menyusun narasi storytelling budaya dalam 4 bahasa...");
+      }, 2800);
+
+      const payload = previewImage
+        ? { imageBase64: previewImage, userNotes }
+        : { mockPreset: selectedPreset, userNotes };
+
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+
+      if (!res.ok) {
+        throw new Error("Gagal menganalisis gambar");
+      }
+
+      const data = await res.json();
+      setResult(data);
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kendala saat menganalisis. Menampilkan preset sampel sebagai cadangan.");
+      if (selectedPreset === "garuda" || !selectedPreset) setResult(MOCK_GARUDA_ANALYSIS);
+      if (selectedPreset === "endek") setResult(MOCK_ENDEK_ANALYSIS);
+      if (selectedPreset === "perak") setResult(MOCK_PERAK_ANALYSIS);
+    } finally {
+      setIsAnalyzing(false);
+      setAnalysisStep("");
+    }
   };
 
   const handleCopyNarrative = (text: string) => {
@@ -73,6 +240,179 @@ export default function Home() {
             Cukup 1 foto kerajinan. Dapatkan identifikasi filosofi motif Bali, narasi ekspor 4 bahasa, cek kepatuhan kode HS Bea Cukai, serta sertifikat keaslian digital otomatis.
           </p>
         </div>
+
+        <div className="mb-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-[#C85A32]" /> Unggah Foto Kerajinan Kriya Bali
+            </h3>
+            <span className="text-xs text-stone-500">Mendukung JPG, PNG, WEBP (Maks 5MB)</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => e.target.files?.[0] && processFile(e.target.files[0])}
+                accept="image/*"
+                className="hidden"
+              />
+
+              {previewImage ? (
+                <div className="relative rounded-xl border border-stone-200 overflow-hidden bg-stone-50 aspect-video flex items-center justify-center group">
+                  <img
+                    src={previewImage}
+                    alt="Preview Karya Kriya"
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-1.5 rounded-lg bg-white/90 text-stone-900 text-xs font-semibold hover:bg-white transition flex items-center gap-1.5 shadow"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Ganti Foto
+                    </button>
+                    <button
+                      onClick={() => setPreviewImage(null)}
+                      className="px-3 py-1.5 rounded-lg bg-red-600/90 text-white text-xs font-semibold hover:bg-red-600 transition flex items-center gap-1.5 shadow"
+                    >
+                      <X className="w-3.5 h-3.5" /> Hapus
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[190px] ${
+                    isDragging
+                      ? "border-[#C85A32] bg-orange-50/50"
+                      : "border-stone-200 hover:border-[#C85A32]/60 hover:bg-stone-50/70"
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-full bg-orange-100 text-[#C85A32] flex items-center justify-center mb-3">
+                    <ImageIcon className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs font-semibold text-stone-800 mb-1">
+                    Klik untuk pilih foto atau seret ke area ini
+                  </p>
+                  <p className="text-[11px] text-stone-500 mb-4">
+                    Kompresi otomatis di browser untuk respons AI ultra-cepat
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startCamera();
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-[#C85A32]" />
+                    Ambil dari Kamera Langsung
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col h-full justify-between gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  Catatan Pengrajin (Opsional):
+                </label>
+                <textarea
+                  value={userNotes}
+                  onChange={(e) => setUserNotes(e.target.value)}
+                  placeholder="Misal: Ukiran Garuda kayu suar utuh tanpa sambungan, pengerjaan 14 hari, modal bahan Rp 450.000..."
+                  rows={4}
+                  className="w-full text-xs p-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C85A32]/30 focus:border-[#C85A32] transition resize-none placeholder:text-stone-400 text-stone-800"
+                />
+              </div>
+
+              <div>
+                <button
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing}
+                  className="w-full bg-gradient-to-r from-[#C85A32] to-[#D97706] hover:from-[#B45309] hover:to-[#B45309] text-white text-sm font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>{analysisStep || "Menganalisis Karya Kriya..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Analisis & Buat Paket Ekspor (AI)</span>
+                    </>
+                  )}
+                </button>
+                <p className="text-[11px] text-stone-500 text-center mt-2">
+                  Memeriksa filosofi budaya Bali, HS Code BTKI 2026, dan sertifikat digital
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {isCameraOpen && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200">
+              <div className="flex items-center justify-between p-4 border-b border-stone-100">
+                <div className="flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-[#C85A32]" />
+                  <h4 className="font-bold text-sm text-stone-900">Ambil Foto Karya Kriya</h4>
+                </div>
+                <button
+                  onClick={stopCamera}
+                  className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-800 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-4 bg-stone-950 flex flex-col items-center justify-center relative min-h-[300px]">
+                {cameraError ? (
+                  <div className="text-center p-6 text-red-400 text-xs">
+                    <p>{cameraError}</p>
+                    <button
+                      onClick={stopCamera}
+                      className="mt-4 px-4 py-2 bg-stone-800 text-white rounded-lg text-xs"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full max-h-[360px] object-cover rounded-lg"
+                  />
+                )}
+              </div>
+
+              {!cameraError && (
+                <div className="p-4 border-t border-stone-100 flex items-center justify-between">
+                  <button
+                    onClick={stopCamera}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={capturePhoto}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C85A32] hover:bg-[#B45309] text-white shadow flex items-center gap-2 transition"
+                  >
+                    <Camera className="w-4 h-4" /> Ambil Foto
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Judge Quick Presets */}
         <div className="mb-8 p-4 rounded-2xl bg-white border border-stone-200 shadow-sm">
