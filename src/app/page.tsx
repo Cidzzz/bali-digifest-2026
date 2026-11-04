@@ -268,35 +268,32 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-sans pb-20">
-      {/* Header */}
-      <header className="border-b border-stone-200 bg-white/80 backdrop-blur sticky top-0 z-30">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-sans pb-20 selection:bg-[#C85A32]/20 selection:text-[#C85A32]">
+      <header className="border-b border-stone-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-30 shadow-xs">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#C85A32] to-[#D97706] flex items-center justify-center text-white shadow-md font-bold text-xl">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#C85A32] to-[#D97706] flex items-center justify-center text-white shadow-md shadow-orange-950/10 font-bold text-xl ring-2 ring-amber-400/30">
               K
             </div>
             <div>
               <span className="font-extrabold text-xl tracking-tight text-stone-900">
-                Kriya<span className="text-[#C85A32]">Loka</span> <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">AI</span>
+                Kriya<span className="text-[#C85A32]">Loka</span> <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-[#B45309] border border-amber-300">AI Copilot</span>
               </span>
-              <p className="text-xs text-stone-500 hidden sm:block">AI Export & Cultural Storytelling Copilot for Balinese Artisans</p>
+              <p className="text-xs text-stone-500 hidden sm:block">From Local Hands to Global Lands • Bali Heritage Export Platform</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-stone-600 bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200">
+            <span className="text-xs font-semibold text-[#B45309] bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200/80 shadow-2xs">
               Bali DigiFest 2026 MVP
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
       <main className="max-w-6xl mx-auto px-4 pt-8">
-        {/* Hero Banner */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 border border-orange-200 text-[#C85A32] text-xs font-semibold mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-100/80 border border-orange-300 text-[#C85A32] text-xs font-bold mb-4 shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
             <span>Zero-Prompt Multimodal AI untuk Pengrajin Bali</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight leading-tight mb-3">
@@ -512,56 +509,56 @@ export default function Home() {
         )}
 
         {/* Judge Quick Presets */}
-        <div className="mb-8 p-4 rounded-2xl bg-white border border-stone-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+        <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" /> Mode Uji Cepat Juri (One-Click Sample)
+              <Sparkles className="w-4 h-4 text-[#D97706]" /> Mode Uji Cepat Juri (One-Click Sample)
             </span>
-            <span className="text-xs text-stone-500">Klik salah satu sampel di bawah untuk evaluasi instan:</span>
+            <span className="text-xs text-stone-500">Pilih sampel karya autentik Bali di bawah untuk simulasi langsung:</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <button
               onClick={() => handlePresetClick("garuda")}
-              className={`p-3 rounded-xl border text-left transition flex items-center gap-3 ${
+              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
                 selectedPreset === "garuda"
-                  ? "border-[#C85A32] bg-orange-50/60 ring-2 ring-orange-200"
-                  : "border-stone-200 hover:border-stone-300 bg-stone-50"
+                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
+                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
               }`}
             >
-              <div className="w-10 h-10 rounded-lg bg-orange-200/60 flex items-center justify-center text-lg">🪵</div>
+              <div className="w-11 h-11 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center text-xl shadow-2xs">🪵</div>
               <div>
-                <p className="font-semibold text-xs text-stone-900">Patung Garuda Wisnu</p>
-                <p className="text-[11px] text-stone-500">Kayu Suar • Gianyar</p>
+                <p className="font-bold text-xs text-stone-900">Patung Garuda Wisnu</p>
+                <p className="text-[11px] text-[#B45309] font-medium">Kayu Suar • Kemenuh Gianyar</p>
               </div>
             </button>
 
             <button
               onClick={() => handlePresetClick("endek")}
-              className={`p-3 rounded-xl border text-left transition flex items-center gap-3 ${
+              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
                 selectedPreset === "endek"
-                  ? "border-[#C85A32] bg-orange-50/60 ring-2 ring-orange-200"
-                  : "border-stone-200 hover:border-stone-300 bg-stone-50"
+                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
+                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
               }`}
             >
-              <div className="w-10 h-10 rounded-lg bg-purple-200/60 flex items-center justify-center text-lg">🧵</div>
+              <div className="w-11 h-11 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center text-xl shadow-2xs">🧵</div>
               <div>
-                <p className="font-semibold text-xs text-stone-900">Tenun Ikat Endek</p>
-                <p className="text-[11px] text-stone-500">Sutra Alami • Sidemen</p>
+                <p className="font-bold text-xs text-stone-900">Tenun Ikat Endek</p>
+                <p className="text-[11px] text-[#B45309] font-medium">Sutra Alami • Sidemen Karangasem</p>
               </div>
             </button>
 
             <button
               onClick={() => handlePresetClick("perak")}
-              className={`p-3 rounded-xl border text-left transition flex items-center gap-3 ${
+              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
                 selectedPreset === "perak"
-                  ? "border-[#C85A32] bg-orange-50/60 ring-2 ring-orange-200"
-                  : "border-stone-200 hover:border-stone-300 bg-stone-50"
+                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
+                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
               }`}
             >
-              <div className="w-10 h-10 rounded-lg bg-amber-200/60 flex items-center justify-center text-lg">💍</div>
+              <div className="w-11 h-11 rounded-lg bg-amber-100/70 border border-amber-300 flex items-center justify-center text-xl shadow-2xs">💍</div>
               <div>
-                <p className="font-semibold text-xs text-stone-900">Bros Bunga Sandat</p>
-                <p className="text-[11px] text-stone-500">Perak 925 • Celuk Sukawati</p>
+                <p className="font-bold text-xs text-stone-900">Bros Bunga Sandat</p>
+                <p className="text-[11px] text-[#B45309] font-medium">Perak 925 • Celuk Sukawati</p>
               </div>
             </button>
           </div>
@@ -771,33 +768,38 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Certificate Preview Card */}
-              <div className="bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 rounded-2xl p-6 border border-amber-200/60 shadow-sm flex flex-col justify-between">
+              <div className="bg-gradient-to-br from-amber-50/70 via-white to-orange-50/40 rounded-2xl p-6 border-2 border-amber-300/80 shadow-md flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-200/40 to-transparent pointer-events-none rounded-bl-full" />
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
-                      <FileText className="w-4 h-4" /> Digital Authenticity Card
+                      <FileText className="w-4 h-4 text-[#D97706]" /> Digital Authenticity Card
                     </span>
-                    <span className="text-[10px] font-mono bg-white border border-stone-200 px-2 py-0.5 rounded text-stone-500">
-                      VERIFIED
+                    <span className="text-[10px] font-mono font-bold bg-amber-100 text-[#B45309] border border-amber-300 px-2.5 py-0.5 rounded-full shadow-2xs">
+                      BALI HERITAGE VERIFIED
                     </span>
                   </div>
 
-                  <div className="border border-dashed border-amber-300 p-4 rounded-xl bg-white/70 mb-4 text-center">
-                    <p className="text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-1">
-                      Kemenkumham & Dinas Koperasi Bali
+                  <div className="border-2 border-dashed border-amber-400/80 p-5 rounded-xl bg-white/90 mb-4 text-center shadow-xs">
+                    <div className="flex justify-center mb-1">
+                      <div className="w-6 h-6 rounded-full bg-amber-100 text-[#B45309] flex items-center justify-center text-xs font-bold">
+                        ⚜️
+                      </div>
+                    </div>
+                    <p className="text-[10px] tracking-widest uppercase text-[#B45309] font-bold mb-1">
+                      Dinas Perindustrian & Koperasi Provinsi Bali
                     </p>
                     <h4 className="font-serif font-bold text-lg text-stone-900 mb-1">
-                      Certificate of Authenticity
+                      Certificate of Cultural Authenticity
                     </h4>
                     <p className="text-xs text-stone-600 mb-3">
-                      Karya Asli Terverifikasi Warisan Budaya Bali
+                      Sertifikat Verifikasi Keaslian & Standar Ekspor Kriya Tradisional Bali
                     </p>
 
-                    <div className="text-left bg-stone-50 p-2.5 rounded text-[11px] space-y-1 font-mono">
-                      <div><span className="text-stone-400">ID:</span> {result.valuation_and_certificate.digital_certificate.certificate_id}</div>
-                      <div><span className="text-stone-400">Origin:</span> {result.valuation_and_certificate.digital_certificate.artisan_attribution}</div>
-                      <div><span className="text-stone-400">Hash:</span> {result.valuation_and_certificate.digital_certificate.verification_hash}</div>
+                    <div className="text-left bg-stone-50 border border-stone-200/70 p-3 rounded-lg text-[11px] space-y-1 font-mono">
+                      <div><span className="text-stone-400">Cert ID:</span> <span className="font-semibold text-stone-800">{result.valuation_and_certificate.digital_certificate.certificate_id}</span></div>
+                      <div><span className="text-stone-400">Attribution:</span> <span className="font-semibold text-stone-800">{result.valuation_and_certificate.digital_certificate.artisan_attribution}</span></div>
+                      <div><span className="text-stone-400">Cryptographic Hash:</span> <span className="text-[#C85A32] font-semibold">{result.valuation_and_certificate.digital_certificate.verification_hash}</span></div>
                     </div>
                   </div>
                 </div>
@@ -805,9 +807,9 @@ export default function Home() {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => window.print()}
-                    className="flex-1 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold py-2.5 rounded-xl transition cursor-pointer"
+                    className="flex-1 bg-gradient-to-r from-stone-900 to-stone-800 hover:from-stone-800 hover:to-stone-700 text-white text-xs font-bold py-2.5 rounded-xl shadow transition cursor-pointer"
                   >
-                    Cetak / Simpan PDF
+                    Cetak / Simpan PDF Sertifikat
                   </button>
                 </div>
               </div>
