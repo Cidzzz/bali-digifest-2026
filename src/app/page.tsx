@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
+import { DigitalCertificate } from "@/components/DigitalCertificate";
 
 export default function Home() {
   const [selectedPreset, setSelectedPreset] = useState<string | null>("garuda");
@@ -816,52 +817,11 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-amber-50/70 via-white to-orange-50/40 rounded-2xl p-6 border-2 border-amber-300/80 shadow-md flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-200/40 to-transparent pointer-events-none rounded-bl-full" />
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-[#D97706]" /> Digital Authenticity Card
-                    </span>
-                    <span className="text-[10px] font-mono font-bold bg-amber-100 text-[#B45309] border border-amber-300 px-2.5 py-0.5 rounded-full shadow-2xs">
-                      BALI HERITAGE VERIFIED
-                    </span>
-                  </div>
-
-                  <div className="border-2 border-dashed border-amber-400/80 p-5 rounded-xl bg-white/90 mb-4 text-center shadow-xs">
-                    <div className="flex justify-center mb-1">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 text-[#B45309] flex items-center justify-center text-xs font-bold">
-                        ⚜️
-                      </div>
-                    </div>
-                    <p className="text-[10px] tracking-widest uppercase text-[#B45309] font-bold mb-1">
-                      Dinas Perindustrian & Koperasi Provinsi Bali
-                    </p>
-                    <h4 className="font-serif font-bold text-lg text-stone-900 mb-1">
-                      Certificate of Cultural Authenticity
-                    </h4>
-                    <p className="text-xs text-stone-600 mb-3">
-                      Sertifikat Verifikasi Keaslian & Standar Ekspor Kriya Tradisional Bali
-                    </p>
-
-                    <div className="text-left bg-stone-50 border border-stone-200/70 p-3 rounded-lg text-[11px] space-y-1 font-mono">
-                      <div><span className="text-stone-400">Cert ID:</span> <span className="font-semibold text-stone-800">{result.valuation_and_certificate.digital_certificate.certificate_id}</span></div>
-                      <div><span className="text-stone-400">Attribution:</span> <span className="font-semibold text-stone-800">{result.valuation_and_certificate.digital_certificate.artisan_attribution}</span></div>
-                      <div><span className="text-stone-400">Cryptographic Hash:</span> <span className="text-[#C85A32] font-semibold">{result.valuation_and_certificate.digital_certificate.verification_hash}</span></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <button 
-                    type="button"
-                    onClick={handlePrintCertificate}
-                    className="flex-1 bg-gradient-to-r from-stone-900 to-stone-800 hover:from-stone-800 hover:to-stone-700 active:scale-[0.99] text-white text-xs font-bold py-3 rounded-xl shadow transition cursor-pointer"
-                  >
-                    Cetak / Simpan PDF Sertifikat
-                  </button>
-                </div>
-              </div>
+              <DigitalCertificate
+                result={result}
+                previewImage={previewImage}
+                onPrint={handlePrintCertificate}
+              />
             </div>
           </div>
         )}
