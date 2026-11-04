@@ -25,11 +25,19 @@ body {
 }
 
 @media print {
-  header, footer, button, .no-print {
+  header, footer, button, .no-print, nav {
     display: none !important;
   }
   body {
-    background: white !important;
-    color: black !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .print-certificate-only {
+    box-shadow: none !important;
+    border: 2px solid #b45309 !important;
+    margin: 20px auto !important;
+    max-width: 600px !important;
   }
 }
