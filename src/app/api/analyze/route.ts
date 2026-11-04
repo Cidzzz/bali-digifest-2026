@@ -151,14 +151,9 @@ export async function POST(req: NextRequest) {
     const formattedImageUrl = imageBase64.startsWith("data:")
       ? imageBase64
       : `data:${mimeType};base64,${imageBase64}`;
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-    const imageUrl = `data:${mimeType};base64,${cleanBase64}`;
 
     const promptText = `Analyze this Balinese handicraft image.
 Artisan's additional note: "${userNotes || "Karya kriya tradisional khas seniman lokal Bali."}"
-    try {
-      const promptText = `Analyze this Balinese handicraft image.
-Artisan's additional note: "${userNotes || "Tidak ada catatan tambahan."}"
 
 Evaluate the visual motifs, classify heritage origin, craft multilingual export narratives, determine BTKI 2026 HS Code, and issue digital authenticity certificate data.`;
 
@@ -209,56 +204,6 @@ Evaluate the visual motifs, classify heritage origin, craft multilingual export 
     const parsedData = JSON.parse(content);
 
     return NextResponse.json(parsedData);
-Extract cultural heritage, 4-language storytelling, HS code & export compliance, and fair valuation. Return pure JSON matching the schema.`;
-
-      const aiResponse = await fetch("https://r.dwiai.web.id/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: process.env.MODEL_NAME || "gemini/gemini-2.5-flash",
-          stream: false,
-          messages: [
-            {
-              role: "system",
-              content: SYSTEM_INSTRUCTION,
-            },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: promptText },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: imageUrl,
-                  },
-                },
-              ],
-            },
-          ],
-        }),
-      });
-
-      if (!aiResponse.ok) {
-        throw new Error(`Proxy AI responded with status ${aiResponse.status}`);
-      }
-
-      const aiData = await aiResponse.json();
-      const rawContent = aiData.choices?.[0]?.message?.content || "{}";
-
-      const cleanedJson = rawContent
-        .replace(/```json/gi, "")
-        .replace(/```/g, "")
-        .trim();
-
-      const parsedData = JSON.parse(cleanedJson);
-      return NextResponse.json(parsedData);
-    } catch (apiError: any) {
-      console.warn("API proxy call failed, falling back to mock:", apiError.message);
-      return NextResponse.json(MOCK_GARUDA_ANALYSIS);
-    }
   } catch (error: any) {
     console.error("KriyaLoka Router API Error:", error);
     // Graceful fallback during competition judging
