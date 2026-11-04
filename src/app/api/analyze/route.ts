@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
     if (mockPreset === "perak") return NextResponse.json(MOCK_PERAK_ANALYSIS);
 
     const routerBaseUrl = process.env.AI_ROUTER_BASE_URL || "https://9.cidz.ai.id/v1";
-    const routerApiKey = process.env.AI_ROUTER_API_KEY;
+    const routerApiKey = process.env.AI_ROUTER_API_KEY || "sk-04a959cef273b4b1-2immma-cac6e306";
     const routerModel = process.env.AI_ROUTER_MODEL || "bali";
 
     // Fallback if no image provided
@@ -216,6 +216,9 @@ Evaluate the visual motifs, classify heritage origin, craft multilingual export 
 
     // Clean potential markdown blocks if router returns ```json ... ```
     content = content.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+    if (content.startsWith("```")) {
+      content = content.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
+    }
     const parsedData = JSON.parse(content);
 
     return NextResponse.json(parsedData);
