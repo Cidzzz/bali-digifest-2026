@@ -27,7 +27,6 @@ export default function Home() {
   const [result, setResult] = useState<KriyaAnalysisResponse | null>(MOCK_GARUDA_ANALYSIS);
   const [loading, setLoading] = useState(false);
   const [activeLang, setActiveLang] = useState<"en" | "jp" | "zh" | "id">("en");
-  const [userNotes, setUserNotes] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
