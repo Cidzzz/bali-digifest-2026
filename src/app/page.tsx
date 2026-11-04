@@ -9,6 +9,7 @@ import {
   FileText, 
   CheckCircle2, 
   Copy, 
+  Loader2,
   DollarSign,
   Tag
 } from "lucide-react";
@@ -18,14 +19,56 @@ import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "
 export default function Home() {
   const [selectedPreset, setSelectedPreset] = useState<string | null>("garuda");
   const [result, setResult] = useState<KriyaAnalysisResponse | null>(MOCK_GARUDA_ANALYSIS);
+  const [loading, setLoading] = useState(false);
   const [activeLang, setActiveLang] = useState<"en" | "jp" | "zh" | "id">("en");
+  const [userNotes, setUserNotes] = useState("");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handlePresetClick = (preset: "garuda" | "endek" | "perak") => {
     setSelectedPreset(preset);
+    setUploadedImage(null);
     if (preset === "garuda") setResult(MOCK_GARUDA_ANALYSIS);
     if (preset === "endek") setResult(MOCK_ENDEK_ANALYSIS);
     if (preset === "perak") setResult(MOCK_PERAK_ANALYSIS);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setUploadedImage(base64);
+      setSelectedPreset(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRunAnalyze = async () => {
+    if (!uploadedImage) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageBase64: uploadedImage,
+          userNotes: userNotes,
+        }),
+      });
+
+      const data = await res.json();
+      if (data && !data.error) {
+        setResult(data);
+      }
+    } catch (err) {
+      console.error("Analyze error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopyNarrative = (text: string) => {
@@ -72,6 +115,79 @@ export default function Home() {
           <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
             Cukup 1 foto kerajinan. Dapatkan identifikasi filosofi motif Bali, narasi ekspor 4 bahasa, cek kepatuhan kode HS Bea Cukai, serta sertifikat keaslian digital otomatis.
           </p>
+        </div>
+
+        {/* Upload & Artisan Input Area */}
+        <div className="mb-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            {/* Upload Box */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                1. Unggah Foto Karya Kriya (Real-Time Vision)
+              </label>
+              <div className="border-2 border-dashed border-stone-300 hover:border-[#C85A32] rounded-xl p-4 text-center cursor-pointer transition bg-stone-50/50 relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                {uploadedImage ? (
+                  <div className="space-y-2">
+                    <img
+                      src={uploadedImage}
+                      alt="Uploaded Preview"
+                      className="max-h-36 mx-auto rounded-lg object-contain shadow-sm"
+                    />
+                    <p className="text-xs text-emerald-600 font-semibold">Foto siap dianalisis</p>
+                  </div>
+                ) : (
+                  <div className="py-4">
+                    <Upload className="w-8 h-8 mx-auto text-stone-400 mb-2" />
+                    <p className="text-xs font-semibold text-stone-700">Klik atau geser foto kerajinan ke sini</p>
+                    <p className="text-[11px] text-stone-400">PNG, JPG, WebP hingga 10MB</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Notes & Run Button */}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                  2. Catatan Pengrajin (Opsional)
+                </label>
+                <textarea
+                  value={userNotes}
+                  onChange={(e) => setUserNotes(e.target.value)}
+                  placeholder="Contoh: Ini patung kayu suar motif garuda, pengerjaan pahat tangan 2 minggu di Desa Mas Gianyar..."
+                  className="w-full text-xs p-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#C85A32]/30 focus:border-[#C85A32] resize-none h-24 bg-stone-50"
+                />
+              </div>
+
+              <button
+                disabled={!uploadedImage || loading}
+                onClick={handleRunAnalyze}
+                className={`w-full py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${
+                  uploadedImage && !loading
+                    ? "bg-[#C85A32] hover:bg-[#b04a25] text-white shadow-md cursor-pointer"
+                    : "bg-stone-200 text-stone-400 cursor-not-allowed"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>AI Router (Gemini Combo) Sedang Menganalisis...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Analisis Foto & Buat Paket Ekspor</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Judge Quick Presets */}
