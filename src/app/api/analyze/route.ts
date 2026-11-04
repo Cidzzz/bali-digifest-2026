@@ -149,6 +149,21 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+
+    if (cleanBase64.length > 7 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "Ukuran gambar terlalu besar. Maksimal 5MB." },
+        { status: 413 }
+      );
+    }
+
+    if (cleanBase64.length < 50) {
+      return NextResponse.json(
+        { error: "Data gambar tidak valid atau rusak." },
+        { status: 400 }
+      );
+    }
+
     const imageUrl = `data:${mimeType};base64,${cleanBase64}`;
 
     try {
@@ -163,6 +178,7 @@ Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-la
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
+        signal: AbortSignal.timeout(15000),
         body: JSON.stringify({
           model,
           stream: false,
@@ -200,16 +216,22 @@ Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-la
         .trim();
 
       const parsedData = JSON.parse(cleanedJson);
-      return NextResponse.json(parsedData);
+      return NextResponse.json({ ...parsedData, _fallback: false });
     } catch (apiError: any) {
+      const isTimeout = apiError?.name === "TimeoutError" || apiError?.name === "AbortError";
       console.warn("AI Gateway call failed, falling back to mock:", apiError.message);
-      return NextResponse.json(MOCK_GARUDA_ANALYSIS);
+      return NextResponse.json({
+        ...MOCK_GARUDA_ANALYSIS,
+        _fallback: true,
+        _fallbackReason: isTimeout ? "timeout" : "network",
+      });
     }
   } catch (error: any) {
     console.error("KriyaLoka API Error:", error);
-    return NextResponse.json(
-      { error: "Failed to analyze handicraft", details: error?.message || String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      ...MOCK_GARUDA_ANALYSIS,
+      _fallback: true,
+      _fallbackReason: "server_error",
+    });
   }
 }

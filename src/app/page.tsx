@@ -17,7 +17,8 @@ import {
   RefreshCw,
   Image as ImageIcon,
   Mic,
-  MicOff
+  MicOff,
+  AlertTriangle
 } from "lucide-react";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
@@ -38,6 +39,7 @@ export default function Home() {
   const [analysisStep, setAnalysisStep] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
+  const [errorNotice, setErrorNotice] = useState<{ message: string; isFallback: boolean } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -245,12 +247,19 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     if (!previewImage && !selectedPreset) {
-      alert("Harap pilih salah satu preset sampel atau unggah foto kerajinan terlebih dahulu.");
+      setErrorNotice({
+        message: "Harap pilih salah satu preset sampel kriya Bali atau unggah foto kerajinan terlebih dahulu.",
+        isFallback: false
+      });
       return;
     }
 
     setIsAnalyzing(true);
+    setErrorNotice(null);
     setAnalysisStep("Menganalisis motif & teknik ukir kriya Bali...");
+
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 16000);
 
     try {
       const timer1 = setTimeout(() => {
@@ -268,9 +277,11 @@ export default function Home() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: abortController.signal
       });
 
+      clearTimeout(timeoutId);
       clearTimeout(timer1);
       clearTimeout(timer2);
 
@@ -282,9 +293,25 @@ export default function Home() {
       setResult(data);
       setActiveLang("en");
       setCopied(false);
-    } catch (error) {
-      console.error(error);
-      alert("Terjadi kendala saat menganalisis. Menampilkan preset sampel sebagai cadangan.");
+
+      if (data._fallback) {
+        setErrorNotice({
+          message: data._fallbackReason === "timeout"
+            ? "Layanan AI mengalami batas waktu (>15 detik). Data sampel kriya terverifikasi dimuat sebagai cadangan evaluasi."
+            : "Koneksi AI tidak stabil. Data kurasi kriya Bali autentik dimuat sebagai cadangan.",
+          isFallback: true
+        });
+      }
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      const isTimeout = error?.name === "AbortError";
+      console.warn("Client analyze error:", error);
+      setErrorNotice({
+        message: isTimeout
+          ? "Batas waktu analisis (15 detik) tercapai. Data sampel kriya terverifikasi dimuat agar penilaian tetap lancar."
+          : "Terjadi gangguan jaringan saat menghubungi AI. Data sampel kriya terverifikasi dimuat sebagai cadangan.",
+        isFallback: true
+      });
       if (selectedPreset === "garuda" || !selectedPreset) setResult(MOCK_GARUDA_ANALYSIS);
       if (selectedPreset === "endek") setResult(MOCK_ENDEK_ANALYSIS);
       if (selectedPreset === "perak") setResult(MOCK_PERAK_ANALYSIS);
@@ -330,6 +357,36 @@ export default function Home() {
             Cukup 1 foto kerajinan. Dapatkan identifikasi filosofi motif Bali, narasi ekspor 4 bahasa, cek kepatuhan kode HS Bea Cukai, serta sertifikat keaslian digital otomatis.
           </p>
         </div>
+
+        {errorNotice && (
+          <div className="mb-8 p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 text-stone-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-amber-200/80 text-[#B45309] flex items-center justify-center flex-shrink-0 font-bold">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-stone-900 text-xs mb-0.5">Informasi Layanan AI & Jaringan</p>
+                <p className="text-stone-600 text-[11px] leading-relaxed">{errorNotice.message}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => handleAnalyze()}
+                className="px-3 py-1.5 rounded-xl bg-[#C85A32] hover:bg-[#B45309] active:scale-95 text-white font-bold text-[11px] shadow-xs cursor-pointer transition flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3 h-3" /> Coba Analisis Ulang
+              </button>
+              <button
+                type="button"
+                onClick={() => setErrorNotice(null)}
+                className="px-2.5 py-1.5 rounded-xl bg-white border border-stone-300 hover:bg-stone-100 text-stone-600 font-medium text-[11px] cursor-pointer transition"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
