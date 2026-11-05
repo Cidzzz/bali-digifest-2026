@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
     if (mockPreset === "perak") return NextResponse.json(MOCK_PERAK_ANALYSIS);
 
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.MODEL_NAME || "gemini/gemini-2.5-flash";
+    const model = process.env.MODEL_NAME || "ag/gemini-3.8-flash-low";
     const endpoint = process.env.AI_ENDPOINT || "https://r.dwiai.web.id/v1/chat/completions";
 
     if (!apiKey || apiKey === "your_gemini_api_key_here") {
@@ -176,9 +176,10 @@ Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-la
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(45000),
         body: JSON.stringify({
           model,
           stream: false,
@@ -217,17 +218,19 @@ Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-la
 
       const parsedData = JSON.parse(cleanedJson);
       return NextResponse.json({ ...parsedData, _fallback: false });
-    } catch (apiError: any) {
-      const isTimeout = apiError?.name === "TimeoutError" || apiError?.name === "AbortError";
-      console.warn("AI Gateway call failed, falling back to mock:", apiError.message);
+    } catch (apiError: unknown) {
+      const err = apiError as Error;
+      const isTimeout = err?.name === "TimeoutError" || err?.name === "AbortError";
+      console.warn("AI Gateway call failed, falling back to mock:", err?.message || String(apiError));
       return NextResponse.json({
         ...MOCK_GARUDA_ANALYSIS,
         _fallback: true,
         _fallbackReason: isTimeout ? "timeout" : "network",
       });
     }
-  } catch (error: any) {
-    console.error("KriyaLoka API Error:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("KriyaLoka API Error:", err?.message || String(error));
     return NextResponse.json({
       ...MOCK_GARUDA_ANALYSIS,
       _fallback: true,

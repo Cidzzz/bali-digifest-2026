@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
+import Image from "next/image";
 import { 
   Sparkles, 
   Upload, 
   Globe, 
   ShieldCheck, 
-  FileText, 
   CheckCircle2, 
   Copy, 
-  Loader2,
   DollarSign,
   Tag,
   Camera,
@@ -18,11 +17,41 @@ import {
   Image as ImageIcon,
   Mic,
   MicOff,
-  AlertTriangle
+  AlertTriangle,
+  FileCheck
 } from "lucide-react";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
 import { DigitalCertificate } from "@/components/DigitalCertificate";
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onstart?: () => void;
+  onresult?: (event: SpeechRecognitionEvent) => void;
+  onerror?: (event: { error: string }) => void;
+  onend?: () => void;
+}
+
+interface SpeechRecognitionEvent {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+    length: number;
+  };
+}
+
+interface WindowWithSpeech extends Window {
+  SpeechRecognition?: new () => SpeechRecognitionInstance;
+  webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
+}
 
 export default function Home() {
   const [selectedPreset, setSelectedPreset] = useState<string | null>("garuda");
@@ -38,49 +67,47 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [errorNotice, setErrorNotice] = useState<{ message: string; isFallback: boolean } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const speechSupported = useSyncExternalStore(
+    () => () => {},
+    () => typeof window !== "undefined" && Boolean(
+      (window as WindowWithSpeech).SpeechRecognition ||
+      (window as WindowWithSpeech).webkitSpeechRecognition ||
+      navigator.mediaDevices?.getUserMedia
+    ),
+    () => false
+  );
 
   const handlePresetClick = (preset: "garuda" | "endek" | "perak") => {
     setSelectedPreset(preset);
     setPreviewImage(null);
-    let presetData = MOCK_GARUDA_ANALYSIS;
-    if (preset === "garuda") presetData = MOCK_GARUDA_ANALYSIS;
-    if (preset === "endek") presetData = MOCK_ENDEK_ANALYSIS;
-    if (preset === "perak") presetData = MOCK_PERAK_ANALYSIS;
-    setResult(presetData);
+    const presets = {
+      garuda: MOCK_GARUDA_ANALYSIS,
+      endek: MOCK_ENDEK_ANALYSIS,
+      perak: MOCK_PERAK_ANALYSIS,
+    };
+    setResult(presets[preset]);
     setActiveLang("en");
     setCopied(false);
   };
 
   const handleCopyNarrative = async (text: string) => {
     try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-      }
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
-  };
-
-  const handlePrintCertificate = () => {
-    window.print();
   };
 
   const processFile = (file: File) => {
@@ -90,7 +117,7 @@ export default function Home() {
     }
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const maxDim = 1200;
@@ -147,7 +174,7 @@ export default function Home() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-    } catch (err: any) {
+    } catch {
       setCameraError("Tidak dapat mengakses kamera. Pastikan izin kamera telah diaktifkan.");
     }
   };
@@ -177,11 +204,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setSpeechSupported(false);
-    }
     return () => {
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -192,18 +214,74 @@ export default function Home() {
     };
   }, []);
 
-  const toggleSpeechRecognition = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Browser Anda tidak mendukung Web Speech API. Silakan gunakan Google Chrome atau Edge.");
+  const toggleSpeechRecognition = async () => {
+    if (isRecording) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsRecording(false);
       return;
     }
 
-    if (isRecording) {
-      recognitionRef.current?.stop();
-      setIsRecording(false);
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunksRef.current = [];
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+        const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const audioBlob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+          if (audioBlob.size > 1000) {
+            setIsTranscribing(true);
+            try {
+              const formData = new FormData();
+              formData.append("file", audioBlob, "audio.webm");
+              const res = await fetch("/api/transcribe", {
+                method: "POST",
+                body: formData,
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.text) {
+                  setUserNotes((prev) => {
+                    const base = prev.trim();
+                    return base ? `${base} ${data.text}` : data.text;
+                  });
+                }
+              }
+            } catch (err) {
+              console.warn("API STT fallback triggered:", err);
+            } finally {
+              setIsTranscribing(false);
+            }
+          }
+        };
+
+        mediaRecorderRef.current = recorder;
+        recorder.start();
+        setIsRecording(true);
+        return;
+      } catch (micErr) {
+        console.warn("Microphone access failed for recorder, trying Web Speech API:", micErr);
+      }
+    }
+
+    const win = window as WindowWithSpeech;
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Browser Anda belum mengizinkan rekaman suara atau tidak mendukung mikrofon.");
       return;
     }
 
@@ -217,7 +295,7 @@ export default function Home() {
         setIsRecording(true);
       };
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         let transcript = "";
         for (let i = 0; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
@@ -228,8 +306,7 @@ export default function Home() {
         });
       };
 
-      recognition.onerror = (event: any) => {
-        console.error("Speech recognition error:", event.error);
+      recognition.onerror = () => {
         setIsRecording(false);
       };
 
@@ -239,8 +316,7 @@ export default function Home() {
 
       recognitionRef.current = recognition;
       recognition.start();
-    } catch (err) {
-      console.error(err);
+    } catch {
       setIsRecording(false);
     }
   };
@@ -259,7 +335,7 @@ export default function Home() {
     setAnalysisStep("Menganalisis motif & teknik ukir kriya Bali...");
 
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 16000);
+    const timeoutId = setTimeout(() => abortController.abort(), 45000);
 
     try {
       const timer1 = setTimeout(() => {
@@ -302,10 +378,11 @@ export default function Home() {
           isFallback: true
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
-      const isTimeout = error?.name === "AbortError";
-      console.warn("Client analyze error:", error);
+      const err = error as Error;
+      const isTimeout = err?.name === "AbortError";
+      console.warn("Client analyze error:", err?.message || String(error));
       setErrorNotice({
         message: isTimeout
           ? "Batas waktu analisis (15 detik) tercapai. Data sampel kriya terverifikasi dimuat agar penilaian tetap lancar."
@@ -388,65 +465,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Judge Quick Presets */}
-        <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#D97706]" /> Mode Uji Cepat Juri (One-Click Sample)
-            </span>
-            <span className="text-xs text-stone-500">Pilih sampel karya autentik Bali di bawah untuk simulasi langsung:</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-            <button
-              type="button"
-              onClick={() => handlePresetClick("garuda")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
-                selectedPreset === "garuda"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
-              }`}
-            >
-              <div className="w-11 h-11 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center text-xl shadow-2xs">🪵</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Patung Garuda Wisnu</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Kayu Suar • Kemenuh Gianyar</p>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handlePresetClick("endek")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
-                selectedPreset === "endek"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
-              }`}
-            >
-              <div className="w-11 h-11 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center text-xl shadow-2xs">🧵</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Tenun Ikat Endek</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Sutra Alami • Sidemen Karangasem</p>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handlePresetClick("perak")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
-                selectedPreset === "perak"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
-              }`}
-            >
-              <div className="w-11 h-11 rounded-lg bg-amber-100/70 border border-amber-300 flex items-center justify-center text-xl shadow-2xs">💍</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Bros Bunga Sandat</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Perak 925 • Celuk Sukawati</p>
-              </div>
-            </button>
-          </div>
-        </div>
-
         <div className="mb-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
@@ -472,10 +490,12 @@ export default function Home() {
 
               {previewImage ? (
                 <div className="relative rounded-xl border border-stone-200 overflow-hidden bg-stone-50 aspect-video flex items-center justify-center group">
-                  <img
+                  <Image
                     src={previewImage}
                     alt="Preview Karya Kriya"
-                    className="w-full h-full object-contain"
+                    fill
+                    unoptimized
+                    className="object-contain"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
                     <button
@@ -539,18 +559,25 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={toggleSpeechRecognition}
-                    disabled={!speechSupported}
+                    disabled={!speechSupported || isTranscribing}
                     className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition ${
                       isRecording
                         ? "bg-red-50 text-red-600 border-red-200 animate-pulse"
+                        : isTranscribing
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
                         : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
-                    } ${!speechSupported ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                    title={speechSupported ? "Rekam suara pengrajin dalam Bahasa Indonesia" : "Web Speech API tidak didukung browser ini"}
+                    } ${!speechSupported || isTranscribing ? "opacity-75 cursor-not-allowed" : "cursor-pointer"}`}
+                    title={speechSupported ? "Rekam suara pengrajin dalam Bahasa Indonesia" : "Perekam suara tidak didukung browser ini"}
                   >
                     {isRecording ? (
                       <>
                         <MicOff className="w-3.5 h-3.5 text-red-500" />
                         <span>Merekam... Klik Berhenti</span>
+                      </>
+                    ) : isTranscribing ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+                        <span>Mentranskrip Suara AI...</span>
                       </>
                     ) : (
                       <>
@@ -599,6 +626,65 @@ export default function Home() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Judge Quick Presets */}
+        <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#D97706]" /> Mode Uji Cepat Juri (One-Click Sample)
+            </span>
+            <span className="text-xs text-stone-500">Pilih sampel karya autentik Bali di bawah untuk simulasi langsung:</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <button
+              type="button"
+              onClick={() => handlePresetClick("garuda")}
+              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                selectedPreset === "garuda"
+                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
+                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
+              }`}
+            >
+              <div className="w-11 h-11 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center text-xl shadow-2xs">🪵</div>
+              <div>
+                <p className="font-bold text-xs text-stone-900">Patung Garuda Wisnu</p>
+                <p className="text-[11px] text-[#B45309] font-medium">Kayu Suar • Kemenuh Gianyar</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePresetClick("endek")}
+              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                selectedPreset === "endek"
+                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
+                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
+              }`}
+            >
+              <div className="w-11 h-11 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center text-xl shadow-2xs">🧵</div>
+              <div>
+                <p className="font-bold text-xs text-stone-900">Tenun Ikat Endek</p>
+                <p className="text-[11px] text-[#B45309] font-medium">Sutra Alami • Sidemen Karangasem</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePresetClick("perak")}
+              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                selectedPreset === "perak"
+                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
+                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
+              }`}
+            >
+              <div className="w-11 h-11 rounded-lg bg-amber-100/70 border border-amber-300 flex items-center justify-center text-xl shadow-2xs">💍</div>
+              <div>
+                <p className="font-bold text-xs text-stone-900">Bros Bunga Sandat</p>
+                <p className="text-[11px] text-[#B45309] font-medium">Perak 925 • Celuk Sukawati</p>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -693,7 +779,7 @@ export default function Home() {
                     <Sparkles className="w-3.5 h-3.5 text-[#D97706]" /> Filosofi Makna Budaya (Taksu Seni Bali):
                   </p>
                   <p className="text-xs sm:text-sm text-stone-700 leading-relaxed italic">
-                    "{result.cultural_heritage.philosophical_meaning}"
+                    &ldquo;{result.cultural_heritage.philosophical_meaning}&rdquo;
                   </p>
                 </div>
 
@@ -870,6 +956,29 @@ export default function Home() {
                   </div>
                 </div>
 
+                {result.export_compliance.required_documents && result.export_compliance.required_documents.length > 0 && (
+                  <div className="mb-4 space-y-1.5">
+                    <span className="text-[11px] font-bold text-stone-600 flex items-center gap-1.5">
+                      <FileCheck className="w-3.5 h-3.5 text-[#C85A32]" /> Dokumen Persyaratan Ekspor:
+                    </span>
+                    <div className="space-y-1.5">
+                      {result.export_compliance.required_documents.map((doc, idx) => (
+                        <div key={idx} className="p-2.5 rounded-lg bg-stone-50 border border-stone-200/80 text-xs">
+                          <p className="font-bold text-stone-900">{doc.document_name}</p>
+                          <p className="text-[11px] text-stone-600 leading-snug">{doc.reason}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {result.export_compliance.packaging_advice && (
+                  <div className="mb-4 p-2.5 rounded-lg bg-orange-50/50 border border-orange-200/70 text-xs">
+                    <span className="font-bold text-[#B45309] block text-[11px] mb-0.5">Panduan Pengemasan Ekspor:</span>
+                    <p className="text-stone-700 text-[11px] leading-relaxed">{result.export_compliance.packaging_advice}</p>
+                  </div>
+                )}
+
                 <p className="text-xs text-stone-500 bg-amber-50/50 p-3 rounded-lg border border-amber-100">
                   <span className="font-semibold text-amber-900">Catatan Bea Cukai:</span> {result.export_compliance.export_notes}
                 </p>
@@ -878,7 +987,6 @@ export default function Home() {
               <DigitalCertificate
                 result={result}
                 previewImage={previewImage}
-                onPrint={handlePrintCertificate}
               />
             </div>
           </div>

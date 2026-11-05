@@ -27,7 +27,12 @@ export default function RootLayout({
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div id="main-content" className="w-full flex-1 flex flex-col">
+          {children}
+        </div>
+        <div id="print-root" className="hidden" aria-hidden="true" />
+      </body>
     </html>
   );
 }

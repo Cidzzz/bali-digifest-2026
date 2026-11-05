@@ -25,19 +25,45 @@ body {
 }
 
 @media print {
-  header, footer, button, .no-print, nav {
-    display: none !important;
+  @page {
+    size: A4 portrait;
+    margin: 0 !important;
   }
-  body {
+
+  html, body {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
     background: #ffffff !important;
     color: #000000 !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-  .print-certificate-only {
+
+  #main-content {
+    display: none !important;
+  }
+
+  #print-root {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 20mm !important;
+    box-sizing: border-box !important;
+  }
+
+  #print-root .print-certificate-only {
     box-shadow: none !important;
     border: 2px solid #b45309 !important;
-    margin: 20px auto !important;
-    max-width: 600px !important;
+    width: 100% !important;
+    max-width: 650px !important;
+    margin: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

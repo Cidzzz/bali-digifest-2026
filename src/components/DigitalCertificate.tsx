@@ -1,19 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { KriyaAnalysisResponse } from "@/types/kriya";
-import { ShieldCheck, Printer, Check, Copy, ExternalLink, Award } from "lucide-react";
+import { ShieldCheck, Printer, Check, Copy, Award } from "lucide-react";
 
 interface DigitalCertificateProps {
   result: KriyaAnalysisResponse;
   previewImage?: string | null;
-  onPrint: () => void;
 }
 
 export function DigitalCertificate({
   result,
   previewImage,
-  onPrint,
 }: DigitalCertificateProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const certId = result.valuation_and_certificate.digital_certificate.certificate_id;
@@ -24,6 +23,18 @@ export function DigitalCertificate({
     navigator.clipboard.writeText(verifyUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const handlePrintCertificate = () => {
+    const certEl = document.querySelector(".print-certificate-only");
+    const printRoot = document.getElementById("print-root");
+    if (certEl && printRoot) {
+      printRoot.innerHTML = certEl.outerHTML;
+      window.print();
+      printRoot.innerHTML = "";
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -98,9 +109,12 @@ export function DigitalCertificate({
             <div className="flex flex-col items-center justify-center text-center">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border-2 border-amber-300 overflow-hidden bg-stone-100 shadow-sm flex items-center justify-center p-1 relative">
                 {previewImage ? (
-                  <img
+                  <Image
                     src={previewImage}
                     alt={result.cultural_heritage.craft_name}
+                    width={112}
+                    height={112}
+                    unoptimized
                     className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
@@ -156,7 +170,7 @@ export function DigitalCertificate({
               <div className="pt-1">
                 <span className="text-stone-400 text-[10px] block font-bold">Filosofi Budaya (English Translation):</span>
                 <p className="text-[11px] text-stone-600 leading-tight italic line-clamp-2">
-                  "{result.cultural_heritage.philosophical_meaning}"
+                  &ldquo;{result.cultural_heritage.philosophical_meaning}&rdquo;
                 </p>
               </div>
             </div>
@@ -244,7 +258,7 @@ export function DigitalCertificate({
       <div className="mt-4 flex flex-col sm:flex-row gap-2 no-print">
         <button
           type="button"
-          onClick={onPrint}
+          onClick={handlePrintCertificate}
           className="flex-1 bg-gradient-to-r from-stone-900 to-stone-800 hover:from-stone-800 hover:to-stone-700 active:scale-[0.99] text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
         >
           <Printer className="w-4 h-4 text-amber-300" />
