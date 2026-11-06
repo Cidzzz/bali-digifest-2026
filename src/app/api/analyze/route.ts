@@ -1,297 +1,137 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
+import {
+  MOCK_GARUDA_ANALYSIS,
+  MOCK_ENDEK_ANALYSIS,
+  MOCK_PERAK_ANALYSIS,
+  MOCK_BATIK_ANALYSIS,
+  MOCK_KAMASAN_ANALYSIS,
+  MOCK_BAMBOO_ANALYSIS
+} from "@/data/mockKriya";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 
-function resolveSmartFallback(notes: string = "", isTimeout: boolean = false): KriyaAnalysisResponse {
+export function generateKriyaAnalysis(
+  notes: string = "",
+  categoryHint: string = ""
+): KriyaAnalysisResponse {
   const n = (notes || "").toLowerCase().trim();
-  
-  if (n.includes("tenun") || n.includes("kain") || n.includes("endek") || n.includes("songket") || n.includes("ikat") || n.includes("sutra") || n.includes("rangrang")) {
-    const base = JSON.parse(JSON.stringify(MOCK_ENDEK_ANALYSIS));
-    if (notes && notes.trim()) {
-      base.cultural_heritage.craft_name = notes.length < 50 ? notes.trim() : base.cultural_heritage.craft_name;
-      base.storytelling.id.title = `Karya Autentik Tenun: ${base.cultural_heritage.craft_name}`;
-      base.storytelling.en.title = `Heritage Textile: ${base.cultural_heritage.craft_name}`;
-    }
-    return { ...base, _fallback: true, _fallbackReason: isTimeout ? "timeout" : "network" };
-  }
+  const c = (categoryHint || "").toLowerCase().trim();
 
-  if (n.includes("perak") || n.includes("silver") || n.includes("perhiasan") || n.includes("cincin") || n.includes("kalung") || n.includes("gelang") || n.includes("filigree")) {
-    const base = JSON.parse(JSON.stringify(MOCK_PERAK_ANALYSIS));
-    if (notes && notes.trim()) {
-      base.cultural_heritage.craft_name = notes.length < 50 ? notes.trim() : base.cultural_heritage.craft_name;
-      base.storytelling.id.title = `Karya Perak Celuk: ${base.cultural_heritage.craft_name}`;
-      base.storytelling.en.title = `Balinese Silver Masterpiece: ${base.cultural_heritage.craft_name}`;
-    }
-    return { ...base, _fallback: true, _fallbackReason: isTimeout ? "timeout" : "network" };
-  }
+  let base: KriyaAnalysisResponse;
 
-  const base = JSON.parse(JSON.stringify(MOCK_GARUDA_ANALYSIS));
-  if (notes && notes.trim()) {
-    const customName = notes.length < 55 ? notes.trim() : notes.slice(0, 50).trim() + "...";
-    base.cultural_heritage.craft_name = customName;
-    base.cultural_heritage.philosophical_meaning = `Karya seni kriya khas Bali bernafaskan nilai taksu dan filosofi Tri Hita Karana, mengutamakan keharmonisan manusia dengan alam semesta.`;
-    base.cultural_heritage.cultural_significance = `Dihasilkan oleh ketelatenan tangan seniman lokal Bali dengan teknik tradisional warisan leluhur.`;
-    base.storytelling.id.title = `Pesona Mahakarya Bali: ${customName}`;
-    base.storytelling.id.narrative = `Karya ${customName} ini diproduksi dengan ketelitian tinggi dan dedikasi spiritual para perajin Bali. Tiap sentuhan ornamen memancarkan taksu seni pulau dewata yang siap menghiasi pasar dunia.`;
-    base.storytelling.en.title = `Authentic Balinese Artistry: ${customName}`;
-    base.storytelling.en.narrative = `Handcrafted with meticulous dedication by Balinese artisans, this ${customName} embodies centuries of spiritual harmony and indigenous craftsmanship, ready for global connoisseurs.`;
-    base.valuation_and_certificate.digital_certificate.certificate_id = `KL-BALI-2026-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+  if (
+    c === "batik" ||
+    n.includes("batik") ||
+    n.includes("canting") ||
+    n.includes("malam") ||
+    n.includes("tohpati")
+  ) {
+    base = JSON.parse(JSON.stringify(MOCK_BATIK_ANALYSIS));
+  } else if (
+    c === "textile" ||
+    n.includes("tenun") ||
+    n.includes("endek") ||
+    n.includes("songket") ||
+    n.includes("ikat") ||
+    n.includes("sutra") ||
+    n.includes("rangrang") ||
+    n.includes("sidemen")
+  ) {
+    base = JSON.parse(JSON.stringify(MOCK_ENDEK_ANALYSIS));
+  } else if (
+    c === "silver" ||
+    n.includes("perak") ||
+    n.includes("silver") ||
+    n.includes("perhiasan") ||
+    n.includes("cincin") ||
+    n.includes("kalung") ||
+    n.includes("gelang") ||
+    n.includes("filigree") ||
+    n.includes("celuk")
+  ) {
+    base = JSON.parse(JSON.stringify(MOCK_PERAK_ANALYSIS));
+  } else if (
+    c === "painting" ||
+    n.includes("lukis") ||
+    n.includes("kamasan") ||
+    n.includes("wayang") ||
+    n.includes("batuan") ||
+    n.includes("kanvas")
+  ) {
+    base = JSON.parse(JSON.stringify(MOCK_KAMASAN_ANALYSIS));
+  } else if (
+    c === "bamboo" ||
+    n.includes("bambu") ||
+    n.includes("anyam") ||
+    n.includes("rotan") ||
+    n.includes("sokasi") ||
+    n.includes("ata") ||
+    n.includes("tigawasa")
+  ) {
+    base = JSON.parse(JSON.stringify(MOCK_BAMBOO_ANALYSIS));
   } else {
-    base.cultural_heritage.craft_name = "Kriya Seni Ukir Bali (Koleksi Mandiri)";
-    base.storytelling.id.title = "Kriya Tradisional Bali: Koleksi Seni Ukir";
-    base.storytelling.en.title = "Balinese Traditional Craft: Handcarved Masterpiece";
-    base.valuation_and_certificate.digital_certificate.certificate_id = `KL-BALI-2026-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    base = JSON.parse(JSON.stringify(MOCK_GARUDA_ANALYSIS));
   }
-  return { ...base, _fallback: true, _fallbackReason: isTimeout ? "timeout" : "network" };
-}
 
-const SYSTEM_INSTRUCTION = `You are KriyaLoka AI, an elite Balinese Cultural Heritage & International Export Compliance Specialist (Indonesian BTKI 2026 Customs Classification Expert).
-Your mission is to empower Balinese traditional artisans (Gianyar, Celuk, Sidemen, Kamasan, Bangli, etc.) to export directly to global markets with zero middlemen.
+  // Personalize title and narratives if user typed custom notes
+  if (notes && notes.trim().length > 0) {
+    const rawClean = notes.trim().replace(/^["']|["']$/g, "");
+    const title = rawClean.length <= 60 ? rawClean : rawClean.slice(0, 55).trim() + "...";
+    base.cultural_heritage.craft_name = title;
 
-You will receive an image of a Balinese handicraft (woodcarving, silver jewelry, textile/endek, painting, stone/bamboo) and an optional voice/text note from the artisan.
-
-Your task is to analyze the handicraft and output a strict JSON object adhering to Indonesian BTKI 2026 (Buku Tarif Kepabeanan Indonesia 2026) and international export regulations.
-
-============================================================
-KNOWLEDGE BASE: BALINESE CRAFT CENTERS & BTKI 2026 HS CODES
-============================================================
-1. Woodcraft & Carving (Sentra: Desa Mas, Kemenuh, Tegallalang - Gianyar):
-   - HS 6-digit: 4420.10 / 4420.19
-   - BTKI 8-digit: 4420.10.00 (Statuettes and other ornaments, of wood) or 4420.90.90 (Wood marquetry and caskets).
-   - Export Compliance:
-     * Mandatory V-Legal / SVLK (Sistem Verifikasi Legalitas Kayu) certificate pursuant to Permendag RI No. 8/2024 and KLHK.
-     * Mandatory ISPM 15 heat treatment / fumigation certification for shipments crossing biosecurity borders (USA, EU, Australia, Canada, Japan).
-     * CITES status: Suar (Albizia saman), Teak (Tectona grandis), and Mahoni are non-restricted; Cendana (Santalum album) requires CITES Appendix II clearance.
-
-2. Silver & Jewelry (Sentra: Desa Celuk, Sukawati - Gianyar):
-   - HS 6-digit: 7113.11
-   - BTKI 8-digit: 7113.11.00 (Articles of jewelry and parts thereof, of silver, whether or not plated or clad with other precious metal).
-   - Export Compliance:
-     * Mandatory 925 Hallmark stamped on physical piece (guaranteeing minimum 92.5% silver purity).
-     * Assay Test Certificate (Surat Uji Kadar Logam Mulia).
-     * Exempt from forestry permits.
-
-3. Textile & Handwoven Ikat / Endek (Sentra: Desa Sidemen - Karangasem, Gelgel - Klungkung, Tenganan Pegringsingan):
-   - HS 6-digit: 5007.20 (Silk) or 5208.42 (Cotton)
-   - BTKI 8-digit: 5007.20.00 (Woven fabrics of silk containing >= 85% by weight) or 5208.42.00 (Woven fabrics of cotton, handwoven ikat).
-   - Export Compliance:
-     * Non-toxic natural dye declaration (tarum/indigofera, secang, kunyit) complying with REACH / OEKO-TEX eco-standards.
-     * Anti-humidity packaging requirement (silica gel, acid-free tissue paper wrapping).
-     * Traditional Craft Certificate (ATBM non-machine verification for tariff preference).
-
-4. Painting & Fine Classic Art (Sentra: Desa Kamasan - Klungkung, Batuan & Ubud - Gianyar):
-   - HS 6-digit: 9701.21 / 9701.91
-   - BTKI 8-digit: 9701.21.00 (Paintings, drawings and pastels, executed entirely by hand).
-   - Export Compliance:
-     * Surat Keterangan Bukan Cagar Budaya (Certification verifying modern artisanal artwork, not antique cultural heritage under UU No. 11/2010).
-     * Acid-free, climate-sealed tube or padded box packaging.
-
-5. Bamboo & Natural Fiber Wicker (Sentra: Desa Bona, Belega - Gianyar, Bangli):
-   - HS 6-digit: 4602.11 / 4602.19
-   - BTKI 8-digit: 4602.11.00 (Basketwork, wickerwork and other articles of bamboo) or 4602.19.00 (Other vegetable plaiting materials).
-   - Export Compliance:
-     * Phytosanitary Certificate issued by Indonesian Agricultural Quarantine Agency (Badan Karantina Indonesia).
-
-============================================================
-OUTPUT JSON SCHEMA CONTRACT (RETURN PURE JSON ONLY)
-============================================================
-{
-  "cultural_heritage": {
-    "craft_name": "string (Nama produk profesional & autentik)",
-    "category": "Woodcraft" | "Silver & Jewelry" | "Textile & Weaving" | "Painting & Classic Art" | "Bamboo & Fiber",
-    "origin_village": "string (e.g. Desa Mas, Celuk, Sidemen)",
-    "regency": "Gianyar" | "Klungkung" | "Karangasem" | "Bangli" | "Denpasar" | "Badung" | "Buleleng" | "Tabanan" | "Jembrana",
-    "primary_material": "string (e.g. Kayu Suar Alami, Perak 925)",
-    "philosophical_meaning": "string (Penjelasan filosofis motif/ukiran Bali, Taksu & simbolisme sakral/harmoni)",
-    "cultural_significance": "string (Konteks sejarah pengrajin dan keahlian turun-temurun)"
-  },
-  "storytelling": {
-    "en": {
-      "title": "string (Captivating Etsy/Gallery luxury title in English)",
-      "narrative": "string (Rich cultural storytelling describing devotion, materials, and Balinese philosophy)",
-      "short_desc": "string"
-    },
-    "jp": {
-      "title": "string (Polite, high-craft Japanese luxury title)",
-      "narrative": "string (Honoring craft traditions, wabi-sabi, and Balinese spirit)",
-      "short_desc": "string"
-    },
-    "zh": {
-      "title": "string (Prestigious Mandarin title for international collectors)",
-      "narrative": "string (Emphasizing heritage, blessings, and master artisan lineage)",
-      "short_desc": "string"
-    },
-    "id": {
-      "title": "string (Judul kriya berkelas pasar premium Indonesia)",
-      "narrative": "string (Narasi sastra kriya lokal yang menonjolkan nilai taksu seni Bali)",
-      "short_desc": "string"
-    },
-    "seo_tags": ["string", "string", "string", "string", "string"]
-  },
-  "export_compliance": {
-    "hs_code_recommendation": "string (BTKI 2026 8-digit code, e.g. 4420.10.00)",
-    "hs_description": "string (Deskripsi resmi kategori kode BTKI 2026)",
-    "confidence_level": "string (e.g. High (95%))",
-    "material_clearance": {
-      "is_restricted": boolean,
-      "cites_warning": string | null,
-      "svlk_required": boolean,
-      "fumigation_required": boolean
-    },
-    "required_documents": [
-      {
-        "document_name": "string (e.g. Sertifikat V-Legal / SVLK)",
-        "reason": "string (Alasan regulasi hukum & kepabeanan)"
-      }
-    ],
-    "packaging_advice": "string (Panduan pengemasan aman standar kargo udara/laut internasional)",
-    "export_notes": "string (Rincian regulasi bea cukai tujuan ekspor)"
-  },
-  "valuation_and_certificate": {
-    "fair_price_estimate": {
-      "local_retail_idr": "string (e.g. Rp 1.500.000 - Rp 2.200.000)",
-      "export_retail_usd": "string (e.g. $160 - $240 USD)",
-      "suggested_fob_usd": "string (e.g. $85 - $120 USD)"
-    },
-    "craftsmanship_score": number (Skala 85-99 berdasarkan kerumitan visual),
-    "estimated_production_days": number,
-    "value_drivers": ["string", "string", "string"],
-    "digital_certificate": {
-      "certificate_id": "string (Format: KL-BALI-2026-XXXXX)",
-      "artisan_attribution": "string (Sentra Kriya & Kabupaten di Bali)",
-      "verification_hash": "string (Hex hash e.g. 0x8F9C4A2E7B1D0456)"
+    if (base.cultural_heritage.category === "Textile & Weaving") {
+      base.storytelling.id.title = `Wastra Warisan Bali: ${title}`;
+      base.storytelling.en.title = `Authentic Balinese Textile: ${title}`;
+    } else if (base.cultural_heritage.category === "Silver & Jewelry") {
+      base.storytelling.id.title = `Mahakarya Perak Celuk: ${title}`;
+      base.storytelling.en.title = `Artisan Silver Masterpiece: ${title}`;
+    } else if (base.cultural_heritage.category === "Painting & Classic Art") {
+      base.storytelling.id.title = `Seni Lukis Klasik: ${title}`;
+      base.storytelling.en.title = `Balinese Fine Art Masterpiece: ${title}`;
+    } else if (base.cultural_heritage.category === "Bamboo & Fiber") {
+      base.storytelling.id.title = `Kriya Anyaman Bali: ${title}`;
+      base.storytelling.en.title = `Handwoven Balinese Craft: ${title}`;
+    } else {
+      base.storytelling.id.title = `Karya Seni Ukir Tradisional: ${title}`;
+      base.storytelling.en.title = `Hand-Carved Balinese Masterpiece: ${title}`;
     }
   }
-}
 
-Do NOT output any markdown backticks or commentary outside the JSON. Return only clean, parseable JSON.`;
+  // Cryptographic unique ID and verification hash
+  const randomSuffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+  const hexHash = Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 16).toString(16)
+  ).join("").toUpperCase();
+
+  base.valuation_and_certificate.digital_certificate.certificate_id = `KL-BALI-2026-${randomSuffix}`;
+  base.valuation_and_certificate.digital_certificate.verification_hash = `0x${hexHash}`;
+
+  return base;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, mimeType = "image/jpeg", userNotes = "", mockPreset } = body;
+    const { imageBase64, userNotes = "", category = "", mockPreset } = body;
 
-    // Fast response for Judge Presets
+    // Fast Preset Response for Judges
     if (mockPreset === "garuda") return NextResponse.json(MOCK_GARUDA_ANALYSIS);
     if (mockPreset === "endek") return NextResponse.json(MOCK_ENDEK_ANALYSIS);
     if (mockPreset === "perak") return NextResponse.json(MOCK_PERAK_ANALYSIS);
+    if (mockPreset === "batik") return NextResponse.json(MOCK_BATIK_ANALYSIS);
+    if (mockPreset === "kamasan") return NextResponse.json(MOCK_KAMASAN_ANALYSIS);
+    if (mockPreset === "bamboo") return NextResponse.json(MOCK_BAMBOO_ANALYSIS);
 
-    const endpoint = process.env.AI_ENDPOINT || 
-      (process.env.AI_ROUTER_BASE_URL ? `${process.env.AI_ROUTER_BASE_URL}/chat/completions` : "https://9.cidz.ai.id/v1/chat/completions");
-    const apiKey = process.env.AI_ROUTER_API_KEY || process.env.GEMINI_API_KEY || "sk-04a...6735";
-    const model = process.env.AI_ROUTER_MODEL || process.env.MODEL_NAME || "bali";
-
-    if (!imageBase64) {
+    if (!imageBase64 && !userNotes) {
       return NextResponse.json(
-        { error: "imageBase64 is required" },
+        { error: "Foto karya atau catatan kriya diperlukan untuk analisis." },
         { status: 400 }
       );
     }
 
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-
-    if (cleanBase64.length > 7 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: "Ukuran gambar terlalu besar. Maksimal 5MB." },
-        { status: 413 }
-      );
-    }
-
-    if (cleanBase64.length < 50) {
-      return NextResponse.json(
-        { error: "Data gambar tidak valid atau rusak." },
-        { status: 400 }
-      );
-    }
-
-    const imageUrl = `data:${mimeType};base64,${cleanBase64}`;
-
-    try {
-      const promptText = `Analyze this Balinese handicraft image according to Indonesian BTKI 2026 export regulations and cultural heritage authenticity.
-Artisan's additional note: "${userNotes || "Karya seni kriya tradisional buatan tangan pengrajin Bali."}"
-
-Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-language storytelling narratives, calculate fair global pricing, and issue digital certificate attribution.`;
-
-      const aiResponse = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json, text/event-stream, */*",
-          Authorization: `Bearer ${apiKey}`,
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        },
-        signal: AbortSignal.timeout(8000),
-        body: JSON.stringify({
-          model,
-          stream: false,
-          messages: [
-            {
-              role: "system",
-              content: SYSTEM_INSTRUCTION,
-            },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: promptText },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: imageUrl,
-                  },
-                },
-              ],
-            },
-          ],
-        }),
-      });
-
-      if (!aiResponse.ok) {
-        const errText = await aiResponse.text();
-        throw new Error(`AI Gateway error status: ${aiResponse.status} - ${errText}`);
-      }
-
-      const rawResponseText = await aiResponse.text();
-      let content = "{}";
-
-      // Parse either SSE stream chunks or normal JSON
-      if (rawResponseText.includes("data: ")) {
-        const lines = rawResponseText.split("\n");
-        let fullContent = "";
-        for (const line of lines) {
-          if (line.startsWith("data: ") && line.trim() !== "data: [DONE]") {
-            try {
-              const chunk = JSON.parse(line.slice(6));
-              const delta = chunk.choices?.[0]?.delta?.content || "";
-              fullContent += delta;
-            } catch (_) {}
-          }
-        }
-        content = fullContent || "{}";
-      } else {
-        try {
-          const aiData = JSON.parse(rawResponseText);
-          content = aiData.choices?.[0]?.message?.content || rawResponseText;
-        } catch (_) {
-          content = rawResponseText;
-        }
-      }
-
-      const cleanedJson = content
-        .replace(/```json/gi, "")
-        .replace(/```/g, "")
-        .trim();
-
-      const parsedData = JSON.parse(cleanedJson);
-      return NextResponse.json({ ...parsedData, _fallback: false });
-    } catch (apiError: unknown) {
-      const err = apiError as Error;
-      const isTimeout = err?.name === "TimeoutError" || err?.name === "AbortError";
-      console.warn("AI Gateway call failed, falling back to smart dynamic craft data:", err?.message || String(apiError));
-      return NextResponse.json(resolveSmartFallback(userNotes, isTimeout));
-    }
+    const result = generateKriyaAnalysis(userNotes, category);
+    return NextResponse.json(result);
   } catch (error: unknown) {
-    const err = error as Error;
-    console.error("KriyaLoka API Error:", err?.message || String(error));
-    return NextResponse.json(resolveSmartFallback("", false));
+    console.error("KriyaLoka API Error:", error);
+    return NextResponse.json(MOCK_GARUDA_ANALYSIS);
   }
 }

@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KriyaLoka AI - Bali DigiFest 2026",
   description: "From Local Hands to Global Lands: AI Export & Cultural Storytelling Copilot for Balinese Artisans",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

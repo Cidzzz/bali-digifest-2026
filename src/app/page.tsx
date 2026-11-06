@@ -60,6 +60,7 @@ interface WindowWithSpeech extends Window {
 
 export default function Home() {
   const [selectedPreset, setSelectedPreset] = useState<string | null>("garuda");
+  const [selectedCategory, setSelectedCategory] = useState<string>("auto");
   const [result, setResult] = useState<KriyaAnalysisResponse | null>(MOCK_GARUDA_ANALYSIS);
   const [activeLang, setActiveLang] = useState<"en" | "jp" | "zh" | "id">("en");
   const [copied, setCopied] = useState(false);
@@ -352,8 +353,8 @@ export default function Home() {
       }, 3000);
 
       const payload = previewImage
-        ? { imageBase64: previewImage, userNotes }
-        : { mockPreset: selectedPreset, userNotes };
+        ? { imageBase64: previewImage, userNotes, category: selectedCategory }
+        : { mockPreset: selectedPreset, userNotes, category: selectedCategory };
 
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -418,8 +419,8 @@ export default function Home() {
       <header className="border-b border-stone-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#C85A32] to-[#B45309] flex items-center justify-center text-white shadow-sm font-bold text-xl">
-              K
+            <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-sm border border-stone-200/80 bg-white shrink-0 flex items-center justify-center">
+              <img src="/logo.png" alt="Logo KriyaLoka" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -693,6 +694,36 @@ export default function Home() {
 
               <div className="flex flex-col justify-between h-full gap-6">
                 <div>
+                  <div className="mb-4">
+                    <label className="text-xs font-bold text-stone-800 mb-2 block">
+                      Klasifikasi Kategori Kriya Bali:
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { id: "auto", label: "✨ Otomatis", desc: "Dari foto & catatan" },
+                        { id: "batik", label: "🎨 Batik & Wastra", desc: "Tohpati / Denpasar" },
+                        { id: "textile", label: "🧵 Tenun & Songket", desc: "Sidemen / Klungkung" },
+                        { id: "woodcraft", label: "🪵 Ukir & Patung Kayu", desc: "Mas Ubud / Gianyar" },
+                        { id: "silver", label: "💍 Perak Celuk 925", desc: "Celuk Sukawati" },
+                        { id: "painting", label: "🖌️ Lukisan Kamasan", desc: "Kamasan Klungkung" },
+                        { id: "bamboo", label: "🎋 Anyaman Bambu", desc: "Tigawasa / Bona" },
+                      ].map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className={`text-xs px-3 py-1.5 rounded-xl border transition-all cursor-pointer font-medium ${
+                            selectedCategory === cat.id
+                              ? "bg-[#C85A32] text-white border-[#C85A32] shadow-sm"
+                              : "bg-white text-stone-700 border-stone-200/80 hover:bg-stone-50"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-bold text-stone-800">
                       Catatan Tambahan Pengrajin (Opsional)
