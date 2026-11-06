@@ -382,7 +382,16 @@ export default function Home() {
             : "Koneksi AI tidak stabil. Data kurasi kriya Bali autentik dimuat sebagai cadangan.",
           isFallback: true
         });
+      } else if (previewImage) {
+        setErrorNotice({
+          message: `Karya berhasil diverifikasi: "${data.cultural_heritage?.craft_name || 'Kriya Bali'}" terdaftar di katalog ekspor.`,
+          isFallback: false
+        });
       }
+
+      setTimeout(() => {
+        document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     } catch (error: unknown) {
       clearTimeout(timeoutId);
       const err = error as Error;
@@ -821,10 +830,12 @@ export default function Home() {
 
         {/* Results Showcase Section */}
         {result && (
-          <div className="space-y-8">
+          <div id="result-section" className="space-y-8 scroll-mt-24">
             <div className="flex items-center justify-between pb-3 border-b border-stone-200/80">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32]">Hasil Terverifikasi</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32]">
+                  {previewImage ? "Karya Terverifikasi AI" : "Hasil Terverifikasi"}
+                </span>
                 <h2 className="text-2xl font-extrabold text-stone-900">Portofolio Ekspor & Warisan Budaya</h2>
               </div>
             </div>

@@ -132,14 +132,10 @@ export async function POST(req: NextRequest) {
     if (mockPreset === "endek") return NextResponse.json(MOCK_ENDEK_ANALYSIS);
     if (mockPreset === "perak") return NextResponse.json(MOCK_PERAK_ANALYSIS);
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.MODEL_NAME || "ag/gemini-3.8-flash-low";
-    const endpoint = process.env.AI_ENDPOINT || "https://r.dwiai.web.id/v1/chat/completions";
-
-    if (!apiKey || apiKey === "your_gemini_api_key_here") {
-      console.warn("GEMINI_API_KEY is not configured. Returning Garuda mock data.");
-      return NextResponse.json(MOCK_GARUDA_ANALYSIS);
-    }
+    const endpoint = process.env.AI_ENDPOINT || 
+      (process.env.AI_ROUTER_BASE_URL ? `${process.env.AI_ROUTER_BASE_URL}/chat/completions` : "https://9.cidz.ai.id/v1/chat/completions");
+    const apiKey = process.env.AI_ROUTER_API_KEY || process.env.GEMINI_API_KEY || "sk-04a...6735";
+    const model = process.env.AI_ROUTER_MODEL || process.env.MODEL_NAME || "bali";
 
     if (!imageBase64) {
       return NextResponse.json(
@@ -176,8 +172,9 @@ Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-la
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+          Accept: "application/json, text/event-stream, */*",
           Authorization: `Bearer ${apiKey}`,
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         },
         signal: AbortSignal.timeout(45000),
         body: JSON.stringify({
@@ -205,13 +202,37 @@ Classify material, verify BTKI 2026 HS Code and regulatory documents, craft 4-la
       });
 
       if (!aiResponse.ok) {
-        throw new Error(`AI Gateway error status: ${aiResponse.status}`);
+        const errText = await aiResponse.text();
+        throw new Error(`AI Gateway error status: ${aiResponse.status} - ${errText}`);
       }
 
-      const aiData = await aiResponse.json();
-      const rawContent = aiData.choices?.[0]?.message?.content || "{}";
+      const rawResponseText = await aiResponse.text();
+      let content = "{}";
 
-      const cleanedJson = rawContent
+      // Parse either SSE stream chunks or normal JSON
+      if (rawResponseText.includes("data: ")) {
+        const lines = rawResponseText.split("\n");
+        let fullContent = "";
+        for (const line of lines) {
+          if (line.startsWith("data: ") && line.trim() !== "data: [DONE]") {
+            try {
+              const chunk = JSON.parse(line.slice(6));
+              const delta = chunk.choices?.[0]?.delta?.content || "";
+              fullContent += delta;
+            } catch (_) {}
+          }
+        }
+        content = fullContent || "{}";
+      } else {
+        try {
+          const aiData = JSON.parse(rawResponseText);
+          content = aiData.choices?.[0]?.message?.content || rawResponseText;
+        } catch (_) {
+          content = rawResponseText;
+        }
+      }
+
+      const cleanedJson = content
         .replace(/```json/gi, "")
         .replace(/```/g, "")
         .trim();
