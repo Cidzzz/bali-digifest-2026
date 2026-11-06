@@ -9,16 +9,21 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Copy, 
-  DollarSign,
-  Tag,
-  Camera,
-  X,
-  RefreshCw,
-  Image as ImageIcon,
-  Mic,
-  MicOff,
-  AlertTriangle,
-  FileCheck
+  DollarSign, 
+  Tag, 
+  Camera, 
+  X, 
+  RefreshCw, 
+  Image as ImageIcon, 
+  Mic, 
+  MicOff, 
+  AlertTriangle, 
+  FileCheck,
+  Landmark,
+  Layers,
+  Award,
+  Scale,
+  ArrowRight
 } from "lucide-react";
 import { KriyaAnalysisResponse } from "@/types/kriya";
 import { MOCK_GARUDA_ANALYSIS, MOCK_ENDEK_ANALYSIS, MOCK_PERAK_ANALYSIS } from "@/data/mockKriya";
@@ -324,7 +329,7 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (!previewImage && !selectedPreset) {
       setErrorNotice({
-        message: "Harap pilih salah satu preset sampel kriya Bali atau unggah foto kerajinan terlebih dahulu.",
+        message: "Harap pilih salah satu sampel kriya Bali atau unggah foto kerajinan terlebih dahulu.",
         isFallback: false
       });
       return;
@@ -332,19 +337,19 @@ export default function Home() {
 
     setIsAnalyzing(true);
     setErrorNotice(null);
-    setAnalysisStep("Menganalisis motif & teknik ukir kriya Bali...");
+    setAnalysisStep("Menganalisis ornamen, motif, dan teknik kriya...");
 
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), 45000);
 
     try {
       const timer1 = setTimeout(() => {
-        setAnalysisStep("Mencocokkan klasifikasi HS-Code BTKI 2026 & regulasi ekspor...");
+        setAnalysisStep("Mencocokkan klasifikasi HS Code BTKI 2026 & regulasi ekspor...");
       }, 1500);
 
       const timer2 = setTimeout(() => {
-        setAnalysisStep("Menyusun narasi storytelling budaya dalam 4 bahasa...");
-      }, 2800);
+        setAnalysisStep("Menyusun narasi kurasi multibahasa & sertifikat keaslian...");
+      }, 3000);
 
       const payload = previewImage
         ? { imageBase64: previewImage, userNotes }
@@ -399,65 +404,86 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-sans pb-20 selection:bg-[#C85A32]/20 selection:text-[#C85A32]">
-      <header className="border-b border-stone-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-30 shadow-xs">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#C85A32] to-[#D97706] flex items-center justify-center text-white shadow-md shadow-orange-950/10 font-bold text-xl ring-2 ring-amber-400/30">
+    <div className="min-h-screen bg-[#FDFBF7] text-stone-900 font-sans pb-28 selection:bg-[#C85A32]/15 selection:text-[#C85A32]">
+      {/* Top Navigation */}
+      <header className="border-b border-stone-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#C85A32] to-[#B45309] flex items-center justify-center text-white shadow-sm font-bold text-xl">
               K
             </div>
             <div>
-              <span className="font-extrabold text-xl tracking-tight text-stone-900">
-                Kriya<span className="text-[#C85A32]">Loka</span> <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-[#B45309] border border-amber-300">AI Copilot</span>
-              </span>
-              <p className="text-xs text-stone-500 hidden sm:block">From Local Hands to Global Lands • Bali Heritage Export Platform</p>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-xl tracking-tight text-stone-900">
+                  Kriya<span className="text-[#C85A32]">Loka</span>
+                </span>
+                <span className="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full border border-stone-200/60 hidden sm:inline-block">
+                  Cultural Export Copilot
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 hidden md:block">
+                From Local Hands to Global Lands • Standarisasi Ekspor Kriya Tradisional Bali
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#B45309] bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200/80 shadow-2xs">
-              Bali DigiFest 2026 MVP
-            </span>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-stone-600 bg-stone-50 px-3.5 py-2 rounded-xl border border-stone-200/80">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Standar Kepabeanan BTKI 2026</span>
+            </div>
+            <button
+              onClick={() => {
+                const uploadSection = document.getElementById("studio-upload");
+                uploadSection?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="text-xs font-bold bg-[#C85A32] hover:bg-[#B45309] text-white px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Mulai Analisis</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 pt-8">
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-100/80 border border-orange-300 text-[#C85A32] text-xs font-bold mb-4 shadow-2xs">
+      <main className="max-w-6xl mx-auto px-6 pt-12 sm:pt-16">
+        {/* Hero Section */}
+        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100/70 border border-orange-200/80 text-[#C85A32] text-xs font-bold mb-5 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
-            <span>Zero-Prompt Multimodal AI untuk Pengrajin Bali</span>
+            <span>Platform Terpadu Ekspor Kriya & Narasi Budaya Bali</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight leading-tight mb-3">
-            Dari Tangan Seniman Bali Menembus Panggung Dunia
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-stone-900 tracking-tight leading-[1.15] mb-5">
+            Bawa Mahakarya Pengrajin Bali ke Pasar Global dengan Percaya Diri
           </h1>
-          <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
-            Cukup 1 foto kerajinan. Dapatkan identifikasi filosofi motif Bali, narasi ekspor 4 bahasa, cek kepatuhan kode HS Bea Cukai, serta sertifikat keaslian digital otomatis.
+          <p className="text-stone-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+            Hanya dengan 1 foto karya seni, KriyaLoka mengidentifikasi filosofi tradisi, memetakan kode HS bea cukai internasional, menyusun narasi kurasi dalam 4 bahasa, dan menerbitkan sertifikat keaslian digital.
           </p>
         </div>
 
         {errorNotice && (
-          <div className="mb-8 p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 text-stone-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-200/80 text-[#B45309] flex items-center justify-center flex-shrink-0 font-bold">
-                <AlertTriangle className="w-4 h-4" />
+          <div className="mb-10 p-5 rounded-2xl bg-amber-50/90 border-2 border-amber-300 text-stone-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-200/80 text-[#B45309] flex items-center justify-center shrink-0 font-bold">
+                <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
                 <p className="font-bold text-stone-900 text-xs mb-0.5">Informasi Layanan AI & Jaringan</p>
                 <p className="text-stone-600 text-[11px] leading-relaxed">{errorNotice.message}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
               <button
                 type="button"
                 onClick={() => handleAnalyze()}
-                className="px-3 py-1.5 rounded-xl bg-[#C85A32] hover:bg-[#B45309] active:scale-95 text-white font-bold text-[11px] shadow-xs cursor-pointer transition flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-xl bg-[#C85A32] hover:bg-[#B45309] active:scale-95 text-white font-bold text-[11px] shadow-xs cursor-pointer transition flex items-center gap-1.5"
               >
-                <RefreshCw className="w-3 h-3" /> Coba Analisis Ulang
+                <RefreshCw className="w-3.5 h-3.5" /> Coba Analisis Ulang
               </button>
               <button
                 type="button"
                 onClick={() => setErrorNotice(null)}
-                className="px-2.5 py-1.5 rounded-xl bg-white border border-stone-300 hover:bg-stone-100 text-stone-600 font-medium text-[11px] cursor-pointer transition"
+                className="px-3 py-2 rounded-xl bg-white border border-stone-300 hover:bg-stone-100 text-stone-600 font-medium text-[11px] cursor-pointer transition"
               >
                 Tutup
               </button>
@@ -465,240 +491,288 @@ export default function Home() {
           </div>
         )}
 
-        <div className="mb-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-              <Upload className="w-4 h-4 text-[#C85A32]" /> Unggah Foto Kerajinan Kriya Bali
-            </h3>
-            <span className="text-xs text-stone-500">Mendukung JPG, PNG, WEBP (Maks 5MB)</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* Curated Masterpieces / Presets */}
+        <section className="mb-14">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
             <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    processFile(e.target.files[0]);
-                  }
-                  e.target.value = "";
-                }}
-                accept="image/*"
-                className="hidden"
-              />
-
-              {previewImage ? (
-                <div className="relative rounded-xl border border-stone-200 overflow-hidden bg-stone-50 aspect-video flex items-center justify-center group">
-                  <Image
-                    src={previewImage}
-                    alt="Preview Karya Kriya"
-                    fill
-                    unoptimized
-                    className="object-contain"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-white/90 text-stone-900 text-xs font-semibold hover:bg-white transition flex items-center gap-1.5 shadow cursor-pointer"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" /> Ganti Foto
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewImage(null)}
-                      className="px-3 py-1.5 rounded-lg bg-red-600/90 text-white text-xs font-semibold hover:bg-red-600 transition flex items-center gap-1.5 shadow cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" /> Hapus
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[190px] ${
-                    isDragging
-                      ? "border-[#C85A32] bg-orange-50/50"
-                      : "border-stone-200 hover:border-[#C85A32]/60 hover:bg-stone-50/70"
-                  }`}
-                >
-                  <div className="w-12 h-12 rounded-full bg-orange-100 text-[#C85A32] flex items-center justify-center mb-3">
-                    <ImageIcon className="w-6 h-6" />
-                  </div>
-                  <p className="text-xs font-semibold text-stone-800 mb-1">
-                    Klik untuk pilih foto atau seret ke area ini
-                  </p>
-                  <p className="text-[11px] text-stone-500 mb-4">
-                    Kompresi otomatis di browser untuk respons AI ultra-cepat
-                  </p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startCamera();
-                    }}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition cursor-pointer"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-[#C85A32]" />
-                    Ambil dari Kamera Langsung
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col h-full justify-between gap-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-stone-700">
-                    Catatan Pengrajin (Opsional):
-                  </label>
-                  <button
-                    type="button"
-                    onClick={toggleSpeechRecognition}
-                    disabled={!speechSupported || isTranscribing}
-                    className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition ${
-                      isRecording
-                        ? "bg-red-50 text-red-600 border-red-200 animate-pulse"
-                        : isTranscribing
-                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                        : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
-                    } ${!speechSupported || isTranscribing ? "opacity-75 cursor-not-allowed" : "cursor-pointer"}`}
-                    title={speechSupported ? "Rekam suara pengrajin dalam Bahasa Indonesia" : "Perekam suara tidak didukung browser ini"}
-                  >
-                    {isRecording ? (
-                      <>
-                        <MicOff className="w-3.5 h-3.5 text-red-500" />
-                        <span>Merekam... Klik Berhenti</span>
-                      </>
-                    ) : isTranscribing ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 text-amber-600 animate-spin" />
-                        <span>Mentranskrip Suara AI...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-3.5 h-3.5 text-[#C85A32]" />
-                        <span>Bicara (Suara ID)</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <textarea
-                  value={userNotes}
-                  onChange={(e) => setUserNotes(e.target.value)}
-                  placeholder="Misal: Ukiran Garuda kayu suar utuh tanpa sambungan, pengerjaan 14 hari, modal bahan Rp 450.000..."
-                  rows={4}
-                  className="w-full text-xs p-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C85A32]/30 focus:border-[#C85A32] transition resize-none placeholder:text-stone-400 text-stone-800"
-                />
-                {isRecording && (
-                  <p className="text-[11px] text-red-600 mt-1 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-red-600 animate-ping inline-block" />
-                    Mendengarkan suara pengrajin... Ucapkan detail karya dalam Bahasa Indonesia.
-                  </p>
-                )}
+              <div className="flex items-center gap-2 text-[#C85A32] text-xs font-bold uppercase tracking-wider mb-1">
+                <Layers className="w-4 h-4" />
+                <span>Koleksi Sampel Kurasi</span>
               </div>
-
-              <div>
-                <button
-                  type="button"
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="w-full bg-gradient-to-r from-[#C85A32] to-[#D97706] hover:from-[#B45309] hover:to-[#B45309] active:scale-[0.99] text-white text-sm font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>{analysisStep || "Menganalisis Karya Kriya..."}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>Analisis & Buat Paket Ekspor (AI)</span>
-                    </>
-                  )}
-                </button>
-                <p className="text-[11px] text-stone-500 text-center mt-2">
-                  Memeriksa filosofi budaya Bali, HS Code BTKI 2026, dan sertifikat digital
-                </p>
-              </div>
+              <h2 className="text-xl font-bold text-stone-900">Eksplorasi Karya Terverifikasi</h2>
             </div>
+            <p className="text-xs text-stone-500 max-w-md text-left sm:text-right">
+              Pilih salah satu karya kriya di bawah untuk melihat struktur dokumen ekspor lengkap dalam 1 klik:
+            </p>
           </div>
-        </div>
 
-        {/* Judge Quick Presets */}
-        <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#D97706]" /> Mode Uji Cepat Juri (One-Click Sample)
-            </span>
-            <span className="text-xs text-stone-500">Pilih sampel karya autentik Bali di bawah untuk simulasi langsung:</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               type="button"
               onClick={() => handlePresetClick("garuda")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
+              className={`p-5 rounded-2xl border text-left transition-all duration-200 flex items-start gap-4 cursor-pointer group ${
                 selectedPreset === "garuda"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
+                  ? "border-[#C85A32] bg-white ring-2 ring-[#C85A32]/20 shadow-md"
+                  : "border-stone-200/90 bg-white/60 hover:bg-white hover:border-stone-300 hover:shadow-sm"
               }`}
             >
-              <div className="w-11 h-11 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center text-xl shadow-2xs">🪵</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Patung Garuda Wisnu</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Kayu Suar • Kemenuh Gianyar</p>
+              <div className="w-12 h-12 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-[#C85A32] shrink-0 group-hover:scale-105 transition-transform">
+                <Landmark className="w-6 h-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#B45309] bg-orange-50 px-2 py-0.5 rounded-md">
+                    Seni Ukir Kayu
+                  </span>
+                  {selectedPreset === "garuda" && (
+                    <span className="w-2 h-2 rounded-full bg-[#C85A32]" />
+                  )}
+                </div>
+                <p className="font-bold text-sm text-stone-900 truncate">Patung Garuda Wisnu</p>
+                <p className="text-xs text-stone-500 mt-0.5">Kayu Suar • Kemenuh Gianyar</p>
               </div>
             </button>
 
             <button
               type="button"
               onClick={() => handlePresetClick("endek")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
+              className={`p-5 rounded-2xl border text-left transition-all duration-200 flex items-start gap-4 cursor-pointer group ${
                 selectedPreset === "endek"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
+                  ? "border-[#C85A32] bg-white ring-2 ring-[#C85A32]/20 shadow-md"
+                  : "border-stone-200/90 bg-white/60 hover:bg-white hover:border-stone-300 hover:shadow-sm"
               }`}
             >
-              <div className="w-11 h-11 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center text-xl shadow-2xs">🧵</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Tenun Ikat Endek</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Sutra Alami • Sidemen Karangasem</p>
+              <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#B45309] shrink-0 group-hover:scale-105 transition-transform">
+                <Layers className="w-6 h-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#B45309] bg-amber-50 px-2 py-0.5 rounded-md">
+                    Wastra Tradisional
+                  </span>
+                  {selectedPreset === "endek" && (
+                    <span className="w-2 h-2 rounded-full bg-[#C85A32]" />
+                  )}
+                </div>
+                <p className="font-bold text-sm text-stone-900 truncate">Tenun Ikat Endek</p>
+                <p className="text-xs text-stone-500 mt-0.5">Sutra Alam • Sidemen Karangasem</p>
               </div>
             </button>
 
             <button
               type="button"
               onClick={() => handlePresetClick("perak")}
-              className={`p-3.5 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
+              className={`p-5 rounded-2xl border text-left transition-all duration-200 flex items-start gap-4 cursor-pointer group ${
                 selectedPreset === "perak"
-                  ? "border-[#C85A32] bg-gradient-to-r from-orange-50/90 to-amber-50/50 ring-2 ring-[#C85A32]/30 shadow-xs"
-                  : "border-stone-200/80 hover:border-amber-400 bg-stone-50/60"
+                  ? "border-[#C85A32] bg-white ring-2 ring-[#C85A32]/20 shadow-md"
+                  : "border-stone-200/90 bg-white/60 hover:bg-white hover:border-stone-300 hover:shadow-sm"
               }`}
             >
-              <div className="w-11 h-11 rounded-lg bg-amber-100/70 border border-amber-300 flex items-center justify-center text-xl shadow-2xs">💍</div>
-              <div>
-                <p className="font-bold text-xs text-stone-900">Bros Bunga Sandat</p>
-                <p className="text-[11px] text-[#B45309] font-medium">Perak 925 • Celuk Sukawati</p>
+              <div className="w-12 h-12 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shrink-0 group-hover:scale-105 transition-transform">
+                <Award className="w-6 h-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-700 bg-stone-100 px-2 py-0.5 rounded-md">
+                    Kriya Logam Mulia
+                  </span>
+                  {selectedPreset === "perak" && (
+                    <span className="w-2 h-2 rounded-full bg-[#C85A32]" />
+                  )}
+                </div>
+                <p className="font-bold text-sm text-stone-900 truncate">Bros Bunga Sandat</p>
+                <p className="text-xs text-stone-500 mt-0.5">Perak 925 • Celuk Sukawati</p>
               </div>
             </button>
           </div>
-        </div>
+        </section>
 
+        {/* Upload & Studio Section */}
+        <section id="studio-upload" className="mb-16">
+          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-stone-200/80 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-6 border-b border-stone-100 mb-8">
+              <div>
+                <h3 className="text-lg font-bold text-stone-900 flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-[#C85A32]" />
+                  <span>Studio Analisis Karya Mandiri</span>
+                </h3>
+                <p className="text-xs text-stone-500 mt-1">
+                  Unggah foto produk kerajinan Anda untuk verifikasi instan ke database budaya dan ekspor
+                </p>
+              </div>
+              <div className="text-xs text-stone-500 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200/60 self-start sm:self-auto">
+                Format: JPG, PNG, WEBP • Max 10MB
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      processFile(e.target.files[0]);
+                    }
+                    e.target.value = "";
+                  }}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                {previewImage ? (
+                  <div className="relative rounded-2xl border border-stone-200 overflow-hidden bg-stone-50 aspect-video flex items-center justify-center group shadow-xs">
+                    <Image
+                      src={previewImage}
+                      alt="Preview Karya Kriya"
+                      fill
+                      unoptimized
+                      className="object-contain"
+                    />
+                    <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 rounded-xl bg-white text-stone-900 text-xs font-bold hover:bg-stone-100 transition flex items-center gap-2 shadow cursor-pointer"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" /> Ganti Gambar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImage(null)}
+                        className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition flex items-center gap-2 shadow cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" /> Hapus
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[240px] ${
+                      isDragging
+                        ? "border-[#C85A32] bg-orange-50/40 scale-[0.99]"
+                        : "border-stone-200 hover:border-[#C85A32]/70 hover:bg-stone-50/60"
+                    }`}
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200/80 text-[#C85A32] flex items-center justify-center mb-4 shadow-2xs">
+                      <ImageIcon className="w-7 h-7" />
+                    </div>
+                    <p className="text-sm font-bold text-stone-900 mb-1">
+                      Pilih atau Seret Foto Kerajinan ke Sini
+                    </p>
+                    <p className="text-xs text-stone-500 mb-5 max-w-xs">
+                      Sistem otomatis mengoptimalkan ketajaman visual untuk mengenali detail ukiran dan serat bahan
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startCamera();
+                      }}
+                      className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 transition cursor-pointer"
+                    >
+                      <Camera className="w-4 h-4 text-[#C85A32]" />
+                      Buka Kamera Perangkat
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col justify-between h-full gap-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-stone-800">
+                      Catatan Tambahan Pengrajin (Opsional)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={toggleSpeechRecognition}
+                      disabled={!speechSupported || isTranscribing}
+                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition ${
+                        isRecording
+                          ? "bg-rose-50 text-rose-600 border-rose-200 animate-pulse"
+                          : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200/80"
+                      } ${!speechSupported ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      title={speechSupported ? "Dikte suara langsung" : "Browser tidak mendukung speech-to-text"}
+                    >
+                      {isTranscribing ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#C85A32]" />
+                          <span>Mengubah Suara...</span>
+                        </>
+                      ) : isRecording ? (
+                        <>
+                          <MicOff className="w-3.5 h-3.5 text-rose-500" />
+                          <span>Merekam Suara... (Klik Selesai)</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-3.5 h-3.5 text-[#C85A32]" />
+                          <span>Dikte Suara (Bahasa Indonesia)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <textarea
+                    value={userNotes}
+                    onChange={(e) => setUserNotes(e.target.value)}
+                    placeholder="Contoh: Ukiran kayu suar utuh tanpa sambungan, dikerjakan seniman Kemenuh Gianyar selama 14 hari dengan pewarnaan alami..."
+                    rows={5}
+                    className="w-full text-xs sm:text-sm p-4 rounded-2xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C85A32]/25 focus:border-[#C85A32] transition resize-none placeholder:text-stone-400 text-stone-800 leading-relaxed"
+                  />
+                  {isRecording && (
+                    <p className="text-xs text-rose-600 mt-2 flex items-center gap-1.5 font-medium">
+                      <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping inline-block" />
+                      Mendengarkan pengrajin... Ucapkan penjelasan detail karya dengan jelas.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    className="w-full bg-[#C85A32] hover:bg-[#B45309] active:scale-[0.99] text-white text-sm font-bold py-4 px-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                        <span>{analysisStep || "Memproses Analisis Ekspor..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 text-amber-200" />
+                        <span>Analisis Budaya & Buat Berkas Ekspor</span>
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-stone-500 text-center mt-3">
+                    Analisis memverifikasi kearifan lokal, regulasi bea cukai, dan estimasi nilai pasar global
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Camera Modal */}
         {isCameraOpen && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200">
-              <div className="flex items-center justify-between p-4 border-b border-stone-100">
-                <div className="flex items-center gap-2">
+          <div className="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200">
+              <div className="flex items-center justify-between p-5 border-b border-stone-100">
+                <div className="flex items-center gap-2.5">
                   <Camera className="w-4 h-4 text-[#C85A32]" />
-                  <h4 className="font-bold text-sm text-stone-900">Ambil Foto Karya Kriya</h4>
+                  <h4 className="font-bold text-sm text-stone-900">Kamera Kerajinan</h4>
                 </div>
                 <button
                   onClick={stopCamera}
-                  className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-800 transition"
+                  className="w-8 h-8 rounded-xl hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-800 transition"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -706,11 +780,11 @@ export default function Home() {
 
               <div className="p-4 bg-stone-950 flex flex-col items-center justify-center relative min-h-[300px]">
                 {cameraError ? (
-                  <div className="text-center p-6 text-red-400 text-xs">
+                  <div className="text-center p-6 text-rose-400 text-xs">
                     <p>{cameraError}</p>
                     <button
                       onClick={stopCamera}
-                      className="mt-4 px-4 py-2 bg-stone-800 text-white rounded-lg text-xs"
+                      className="mt-4 px-4 py-2 bg-stone-800 text-white rounded-xl text-xs font-semibold"
                     >
                       Tutup
                     </button>
@@ -720,24 +794,24 @@ export default function Home() {
                     ref={videoRef}
                     autoPlay
                     playsInline
-                    className="w-full max-h-[360px] object-cover rounded-lg"
+                    className="w-full max-h-[360px] object-cover rounded-xl"
                   />
                 )}
               </div>
 
               {!cameraError && (
-                <div className="p-4 border-t border-stone-100 flex items-center justify-between">
+                <div className="p-5 border-t border-stone-100 flex items-center justify-between">
                   <button
                     onClick={stopCamera}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     onClick={capturePhoto}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C85A32] hover:bg-[#B45309] text-white shadow flex items-center gap-2 transition cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C85A32] hover:bg-[#B45309] text-white shadow-sm flex items-center gap-2 transition cursor-pointer"
                   >
-                    <Camera className="w-4 h-4" /> Ambil Foto
+                    <Camera className="w-4 h-4" /> Ambil Foto Sekarang
                   </button>
                 </div>
               )}
@@ -745,78 +819,88 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results Area */}
+        {/* Results Showcase Section */}
         {result && (
-          <div className="space-y-6">
-            {/* Top Overview Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-8">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200/80">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32]">Hasil Terverifikasi</span>
+                <h2 className="text-2xl font-extrabold text-stone-900">Portofolio Ekspor & Warisan Budaya</h2>
+              </div>
+            </div>
+
+            {/* Top Grid: Cultural Heritage & Valuation */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Cultural Heritage Card */}
-              <div className="md:col-span-2 bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm relative overflow-hidden">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold border border-stone-200/60">
-                      {result.cultural_heritage.category}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-orange-50 text-[#C85A32] text-xs font-bold border border-orange-200/80">
-                      📍 {result.cultural_heritage.origin_village}, {result.cultural_heritage.regency}
-                    </span>
+              <div className="lg:col-span-2 bg-white rounded-3xl p-8 border border-stone-200/80 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-3 py-1 rounded-full bg-stone-100 text-stone-800 text-xs font-semibold border border-stone-200/60">
+                        {result.cultural_heritage.category}
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-orange-50 text-[#C85A32] text-xs font-bold border border-orange-200/70">
+                        📍 {result.cultural_heritage.origin_village}, {result.cultural_heritage.regency}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200/70">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>Autentisitas Budaya: {result.valuation_and_certificate.craftsmanship_score}%</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 shadow-2xs">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Skor Keaslian Budaya: {result.valuation_and_certificate.craftsmanship_score}%</span>
+
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-2">
+                    {result.cultural_heritage.craft_name}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-500 mb-6">
+                    Material Utama: <span className="font-semibold text-stone-800">{result.cultural_heritage.primary_material}</span>
+                  </p>
+
+                  <div className="p-5 rounded-2xl bg-orange-50/50 border border-orange-100/90 mb-5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#B45309] mb-2">
+                      <Sparkles className="w-4 h-4 text-[#D97706]" />
+                      <span>Filosofi & Taksu Seni Bali:</span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-stone-700 leading-relaxed italic">
+                      &ldquo;{result.cultural_heritage.philosophical_meaning}&rdquo;
+                    </p>
                   </div>
-                </div>
 
-                <h2 className="text-xl sm:text-2xl font-bold text-stone-900 mb-2">
-                  {result.cultural_heritage.craft_name}
-                </h2>
-                <p className="text-xs text-stone-500 mb-4">
-                  Material Pokok: <span className="font-semibold text-stone-800">{result.cultural_heritage.primary_material}</span>
-                </p>
-
-                <div className="p-4 rounded-xl bg-orange-50/40 border border-orange-100 space-y-2 mb-4">
-                  <p className="text-xs font-bold text-[#B45309] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#D97706]" /> Filosofi Makna Budaya (Taksu Seni Bali):
-                  </p>
-                  <p className="text-xs sm:text-sm text-stone-700 leading-relaxed italic">
-                    &ldquo;{result.cultural_heritage.philosophical_meaning}&rdquo;
+                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                    {result.cultural_heritage.cultural_significance}
                   </p>
                 </div>
-
-                <p className="text-xs text-stone-500 leading-relaxed">
-                  {result.cultural_heritage.cultural_significance}
-                </p>
               </div>
 
               {/* Valuation & Export Pricing Card */}
-              <div className="bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm flex flex-col justify-between">
+              <div className="bg-white rounded-3xl p-8 border border-stone-200/80 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-6">
                     <span className="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-                      <DollarSign className="w-4 h-4 text-emerald-600" /> Estimasi Harga Ekspor
+                      <DollarSign className="w-4 h-4 text-emerald-600" /> Valuasi Pasar Global
                     </span>
-                    <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full shadow-2xs">
+                    <span className="text-xs text-emerald-700 font-bold bg-emerald-50 border border-emerald-200/70 px-2.5 py-1 rounded-full">
                       Fair Global Value
                     </span>
                   </div>
 
                   <div className="space-y-4 mb-6">
-                    <div className="bg-emerald-50/40 p-3.5 rounded-xl border border-emerald-100/80">
-                      <p className="text-[11px] text-stone-500 font-medium">Pasar Ekspor Global (Retail USD):</p>
-                      <p className="text-2xl font-extrabold text-emerald-700">
+                    <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
+                      <p className="text-xs text-stone-500 font-medium">Estimasi Retail Global (USD):</p>
+                      <p className="text-3xl font-extrabold text-emerald-700 mt-1">
                         {result.valuation_and_certificate.fair_price_estimate.export_retail_usd}
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-                      <span className="text-xs text-stone-500">Rekomendasi FOB Grosir:</span>
-                      <span className="text-xs font-bold text-stone-900 bg-stone-100 px-2 py-0.5 rounded-md">
+                    <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-between">
+                      <span className="text-xs text-stone-500">Rekomendasi Grosir (FOB):</span>
+                      <span className="text-xs font-bold text-stone-900 bg-white px-2.5 py-1 rounded-md border border-stone-200/60">
                         {result.valuation_and_certificate.fair_price_estimate.suggested_fob_usd}
                       </span>
                     </div>
 
-                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-                      <span className="text-xs text-stone-500">Estimasi Ritel Lokal (Bali):</span>
+                    <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-between">
+                      <span className="text-xs text-stone-500">Nilai Acuan Lokal (Bali):</span>
                       <span className="text-xs font-semibold text-stone-700">
                         {result.valuation_and_certificate.fair_price_estimate.local_retail_idr}
                       </span>
@@ -824,94 +908,115 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-[11px] text-amber-900">
-                  <p className="font-bold mb-0.5 text-[#B45309]">Sertifikat Keaslian Terbit:</p>
-                  <p className="font-mono text-stone-700 font-semibold">{result.valuation_and_certificate.digital_certificate.certificate_id}</p>
+                <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/70 text-xs text-amber-900">
+                  <div className="flex items-center gap-1.5 font-bold mb-1 text-[#B45309]">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>ID Sertifikat Resmi:</span>
+                  </div>
+                  <p className="font-mono text-stone-800 font-semibold break-all">
+                    {result.valuation_and_certificate.digital_certificate.certificate_id}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Middle Section: Storytelling 4 Languages */}
-            <div className="bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-stone-100">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-[#C85A32]" />
-                  <h3 className="font-bold text-base text-stone-900">Katalog Ekspor & Storytelling Budaya Multilingual</h3>
+            {/* Multilingual Storytelling */}
+            <div className="bg-white rounded-3xl p-8 sm:p-10 border border-stone-200/80 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-stone-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200/70 flex items-center justify-center text-[#C85A32]">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-stone-900">Katalog Narasi Global & Storytelling Budaya</h3>
+                    <p className="text-xs text-stone-500">Narasi terkurasi siap pakai untuk buyer luar negeri dan etalase e-commerce internasional</p>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-stone-100/90 p-1 rounded-xl border border-stone-200/80">
+                <div className="flex items-center gap-1.5 bg-stone-100/80 p-1.5 rounded-2xl border border-stone-200/80 self-start sm:self-auto">
                   <button
                     type="button"
                     onClick={() => setActiveLang("en")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                       activeLang === "en"
-                        ? "bg-white text-[#C85A32] shadow-sm ring-1 ring-stone-200"
-                        : "text-stone-600 hover:text-stone-900 hover:bg-white/60"
+                        ? "bg-white text-[#C85A32] shadow-xs"
+                        : "text-stone-600 hover:text-stone-900"
                     }`}
                   >
-                    🇬🇧 English
+                    English (UK/US)
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveLang("jp")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                       activeLang === "jp"
-                        ? "bg-white text-[#C85A32] shadow-sm ring-1 ring-stone-200"
-                        : "text-stone-600 hover:text-stone-900 hover:bg-white/60"
+                        ? "bg-white text-[#C85A32] shadow-xs"
+                        : "text-stone-600 hover:text-stone-900"
                     }`}
                   >
-                    🇯🇵 日本語
+                    日本語 (Japan)
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveLang("zh")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                       activeLang === "zh"
-                        ? "bg-white text-[#C85A32] shadow-sm ring-1 ring-stone-200"
-                        : "text-stone-600 hover:text-stone-900 hover:bg-white/60"
+                        ? "bg-white text-[#C85A32] shadow-xs"
+                        : "text-stone-600 hover:text-stone-900"
                     }`}
                   >
-                    🇨🇳 中文
+                    中文 (China)
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveLang("id")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                       activeLang === "id"
-                        ? "bg-white text-[#C85A32] shadow-sm ring-1 ring-stone-200"
-                        : "text-stone-600 hover:text-stone-900 hover:bg-white/60"
+                        ? "bg-white text-[#C85A32] shadow-xs"
+                        : "text-stone-600 hover:text-stone-900"
                     }`}
                   >
-                    🇮🇩 Indonesia
+                    Indonesia
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <h4 className="font-bold text-stone-900 text-base sm:text-lg">
+              <div className="space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h4 className="font-bold text-stone-900 text-lg">
                     {result.storytelling[activeLang]?.title || result.storytelling.en.title}
                   </h4>
                   <button
                     type="button"
                     onClick={() => handleCopyNarrative(`${result.storytelling[activeLang]?.title || result.storytelling.en.title}\n\n${result.storytelling[activeLang]?.narrative || result.storytelling.en.narrative}`)}
-                    className="text-xs self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 hover:border-amber-400 bg-white hover:bg-stone-50 text-stone-700 font-medium transition shadow-2xs cursor-pointer active:scale-95"
+                    className="text-xs self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl border border-stone-200 hover:border-[#C85A32]/40 bg-white hover:bg-stone-50 text-stone-800 font-semibold transition shadow-2xs cursor-pointer active:scale-95"
                   >
-                    {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#C85A32]" />}
-                    <span>{copied ? "Tersalin ke Clipboard!" : "Salin Judul & Narasi"}</span>
+                    {copied ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span className="text-emerald-700">Tersalin ke Clipboard</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 text-[#C85A32]" />
+                        <span>Salin Teks Kurasi</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
-                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed bg-stone-50/70 p-4 rounded-xl border border-stone-200/70">
-                  {result.storytelling[activeLang]?.narrative || result.storytelling.en.narrative}
-                </p>
+                <div className="p-6 rounded-2xl bg-stone-50/80 border border-stone-200/70">
+                  <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-serif">
+                    {result.storytelling[activeLang]?.narrative || result.storytelling.en.narrative}
+                  </p>
+                </div>
 
                 <div className="pt-4 border-t border-stone-100 flex flex-wrap items-center gap-2">
-                  <span className="text-xs text-stone-400 flex items-center gap-1">
-                    <Tag className="w-3.5 h-3.5" /> Tags:
+                  <span className="text-xs text-stone-400 flex items-center gap-1 font-medium">
+                    <Tag className="w-3.5 h-3.5" /> Label Ekspor & Metadata:
                   </span>
                   {result.storytelling.seo_tags.map((tag, idx) => (
-                    <span key={idx} className="text-[11px] bg-stone-100 text-stone-600 px-2.5 py-1 rounded-md">
+                    <span key={idx} className="text-xs bg-stone-100 text-stone-700 px-3 py-1 rounded-lg border border-stone-200/60">
                       #{tag}
                     </span>
                   ))}
@@ -919,71 +1024,79 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Bottom Grid: Export Compliance & Certificate */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Bottom Row: Export Compliance & Digital Authenticity Certificate */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
               {/* Export Compliance Card */}
-              <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-bold text-base text-stone-900">Kepatuhan Regulasi & Kode HS Ekspor</h3>
-                </div>
-
-                <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 mb-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-stone-500 font-medium">Rekomendasi HS Code (BTKI 2026):</span>
-                    <span className="text-xs font-mono font-bold bg-stone-900 text-white px-2 py-0.5 rounded">
-                      {result.export_compliance.hs_code_recommendation}
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-700 font-medium">
-                    {result.export_compliance.hs_description}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs mb-4">
-                  <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-100">
-                    <span className="text-stone-500 block text-[11px]">Sertifikat SVLK:</span>
-                    <span className="font-semibold text-stone-800">
-                      {result.export_compliance.material_clearance.svlk_required ? "⚠️ Diperlukan (V-Legal)" : "✅ Bebas SVLK"}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-100">
-                    <span className="text-stone-500 block text-[11px]">Fumigasi ISPM 15:</span>
-                    <span className="font-semibold text-stone-800">
-                      {result.export_compliance.material_clearance.fumigation_required ? "⚠️ Perlu Fumigasi Kayu" : "✅ Bebas Fumigasi"}
-                    </span>
-                  </div>
-                </div>
-
-                {result.export_compliance.required_documents && result.export_compliance.required_documents.length > 0 && (
-                  <div className="mb-4 space-y-1.5">
-                    <span className="text-[11px] font-bold text-stone-600 flex items-center gap-1.5">
-                      <FileCheck className="w-3.5 h-3.5 text-[#C85A32]" /> Dokumen Persyaratan Ekspor:
-                    </span>
-                    <div className="space-y-1.5">
-                      {result.export_compliance.required_documents.map((doc, idx) => (
-                        <div key={idx} className="p-2.5 rounded-lg bg-stone-50 border border-stone-200/80 text-xs">
-                          <p className="font-bold text-stone-900">{doc.document_name}</p>
-                          <p className="text-[11px] text-stone-600 leading-snug">{doc.reason}</p>
-                        </div>
-                      ))}
+              <div className="bg-white rounded-3xl p-8 border border-stone-200/80 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/70 flex items-center justify-center text-emerald-700">
+                      <Scale className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-stone-900">Kepatuhan Regulasi & Kode HS Ekspor</h3>
+                      <p className="text-xs text-stone-500">Standarisasi kepabeanan sesuai BTKI (Buku Tarif Kepabeanan Indonesia 2026)</p>
                     </div>
                   </div>
-                )}
 
-                {result.export_compliance.packaging_advice && (
-                  <div className="mb-4 p-2.5 rounded-lg bg-orange-50/50 border border-orange-200/70 text-xs">
-                    <span className="font-bold text-[#B45309] block text-[11px] mb-0.5">Panduan Pengemasan Ekspor:</span>
-                    <p className="text-stone-700 text-[11px] leading-relaxed">{result.export_compliance.packaging_advice}</p>
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/70 mb-5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs text-stone-500 font-medium">Rekomendasi HS Code (BTKI 2026):</span>
+                      <span className="text-xs font-mono font-bold bg-stone-900 text-white px-2.5 py-1 rounded-lg">
+                        {result.export_compliance.hs_code_recommendation}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-stone-800 font-semibold">
+                      {result.export_compliance.hs_description}
+                    </p>
                   </div>
-                )}
 
-                <p className="text-xs text-stone-500 bg-amber-50/50 p-3 rounded-lg border border-amber-100">
-                  <span className="font-semibold text-amber-900">Catatan Bea Cukai:</span> {result.export_compliance.export_notes}
-                </p>
+                  <div className="grid grid-cols-2 gap-3 text-xs mb-5">
+                    <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200/60">
+                      <span className="text-stone-500 block text-[11px] mb-1">Status SVLK (Legalitas Kayu):</span>
+                      <span className="font-bold text-stone-800">
+                        {result.export_compliance.material_clearance.svlk_required ? "Wajib Dokumen V-Legal" : "Bebas Kewajiban SVLK"}
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200/60">
+                      <span className="text-stone-500 block text-[11px] mb-1">Fumigasi ISPM-15:</span>
+                      <span className="font-bold text-stone-800">
+                        {result.export_compliance.material_clearance.fumigation_required ? "Wajib Perlakuan Panas / Fumigasi" : "Bebas Fumigasi"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {result.export_compliance.required_documents && result.export_compliance.required_documents.length > 0 && (
+                    <div className="mb-5 space-y-2">
+                      <span className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+                        <FileCheck className="w-4 h-4 text-[#C85A32]" /> Dokumen Persyaratan Ekspor:
+                      </span>
+                      <div className="space-y-2">
+                        {result.export_compliance.required_documents.map((doc, idx) => (
+                          <div key={idx} className="p-3 rounded-xl bg-stone-50 border border-stone-200/70 text-xs">
+                            <p className="font-bold text-stone-900">{doc.document_name}</p>
+                            <p className="text-[11px] text-stone-600 leading-snug mt-0.5">{doc.reason}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {result.export_compliance.packaging_advice && (
+                    <div className="mb-5 p-3.5 rounded-xl bg-orange-50/50 border border-orange-200/70 text-xs">
+                      <span className="font-bold text-[#B45309] block mb-1">Panduan Pengemasan Ekspor:</span>
+                      <p className="text-stone-700 text-[11px] leading-relaxed">{result.export_compliance.packaging_advice}</p>
+                    </div>
+                  )}
+
+                  <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs text-amber-900 leading-relaxed">
+                    <span className="font-bold text-[#B45309]">Panduan Kepabeanan:</span> {result.export_compliance.export_notes}
+                  </div>
+                </div>
               </div>
 
+              {/* Digital Certificate of Cultural Authenticity */}
               <DigitalCertificate
                 result={result}
                 previewImage={previewImage}
@@ -992,6 +1105,20 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="mt-24 border-t border-stone-200/80 bg-white/60 py-10">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
+          <div>
+            <span className="font-bold text-stone-800">KriyaLoka</span> • Mendukung UMKM Seni & Budaya Bali menembus pasar ekspor dunia.
+          </div>
+          <div className="flex items-center gap-4">
+            <span>Sesuai Regulasi BTKI 2026</span>
+            <span>•</span>
+            <span>Standar SVLK & ISPM-15</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
